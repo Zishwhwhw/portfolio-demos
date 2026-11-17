@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ember & Bean — Specialty Coffee (demo landing)</title>
+<meta name="description" content="Demo landing page: responsive, fast, no frameworks.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1d140f;--cream:#f6efe6;--rust:#c2552d;--olive:#5c6b3c;--muted:#6f6259}
+*{box-sizing:border-box;margin:0}body{font-family:Inter,system-ui,sans-serif;color:var(--ink);background:var(--cream);line-height:1.55}
+a{color:inherit}.wrap{max-width:1120px;margin:auto;padding:0 24px}
+nav{display:flex;justify-content:space-between;align-items:center;padding:22px 0}
+.logo{font-family:Fraunces,serif;font-weight:800;font-size:24px}.logo span{color:var(--rust)}
+nav ul{display:flex;gap:28px;list-style:none;padding:0}nav a{text-decoration:none;font-weight:600}
+.btn{display:inline-block;background:var(--ink);color:var(--cream);padding:14px 26px;border-radius:999px;text-decoration:none;font-weight:600;transition:transform .2s}
+.btn:hover{transform:translateY(-2px)}.btn.alt{background:transparent;color:var(--ink);border:2px solid var(--ink)}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center;padding:56px 0 88px}
+h1{font-family:Fraunces,serif;font-size:clamp(40px,6vw,76px);line-height:1.02;letter-spacing:-.02em}
+h1 em{color:var(--rust);font-style:normal}.lead{font-size:19px;color:var(--muted);margin:22px 0 32px;max-width:520px}
+.cup{aspect-ratio:1;border-radius:46% 54% 40% 60%/50% 40% 60% 50%;background:radial-gradient(circle at 35% 30%,#e8a46f,var(--rust) 55%,#7a2c14);display:grid;place-items:center;box-shadow:0 40px 80px -30px #7a2c1488}
+.cup div{width:58%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 40% 40%,#6b3a22,#2a160c);border:14px solid var(--cream)}
+.stats{display:flex;gap:40px;margin-top:40px}.stats b{font-family:Fraunces,serif;font-size:32px;display:block}
+section{padding:80px 0}h2{font-family:Fraunces,serif;font-size:44px;margin-bottom:28px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.card{background:#fff;border-radius:22px;padding:26px;box-shadow:0 10px 30px -18px #1d140f55}
+.card h3{font-family:Fraunces,serif;font-size:22px;margin:14px 0 6px}.price{color:var(--rust);font-weight:600}
+.dot{width:54px;height:54px;border-radius:16px}
+.band{background:var(--ink);color:var(--cream);border-radius:28px;padding:56px;display:flex;justify-content:space-between;align-items:center;gap:24px}
+.band h2{margin:0}.band .btn{background:var(--rust)}
+form{display:flex;gap:12px;flex-wrap:wrap}input{flex:1;min-width:220px;padding:14px 18px;border-radius:999px;border:2px solid #ddd;font:inherit}
+footer{padding:40px 0;color:var(--muted);font-size:14px}
+@media(max-width:820px){.hero,.grid{grid-template-columns:1fr}nav ul{display:none}.band{flex-direction:column;align-items:flex-start;padding:36px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <nav><div class="logo">Ember<span>&</span>Bean</div><ul><li><a href="#menu">Menu</a></li><li><a href="#visit">Visit</a></li><li><a href="#club">Coffee club</a></li></ul><a class="btn" href="#club">Order ahead</a></nav>
+ <header class="hero">
+  <div><h1>Slow-roasted coffee for <em>fast</em> mornings.</h1>
+   <p class="lead">Small-batch beans roasted every Thursday, pulled into espresso you can order from your phone and pick up in 3 minutes.</p>
+   <a class="btn" href="#menu">See the menu</a> <a class="btn alt" href="#visit">Find us</a>
+   <div class="stats"><div><b>12</b>single origins</div><div><b>3 min</b>avg. pickup</div><div><b>4.9★</b>2,100 reviews</div></div></div>
+  <div class="cup" aria-hidden="true"><div></div></div>
+ </header>
+</div>
+<section id="menu"><div class="wrap"><h2>House favourites</h2><div class="grid">
+ <div class="card"><div class="dot" style="background:#c2552d"></div><h3>Ember Flat White</h3><p>Double ristretto, silky micro-foam, cocoa finish.</p><p class="price">$4.20</p></div>
+ <div class="card"><div class="dot" style="background:#5c6b3c"></div><h3>Pistachio Cold Brew</h3><p>18-hour steep, house pistachio cream.</p><p class="price">$5.10</p></div>
+ <div class="card"><div class="dot" style="background:#e3b04b"></div><h3>Honey Oat Latte</h3><p>Local honey, oat milk, a pinch of sea salt.</p><p class="price">$4.80</p></div>
+</div></div></section>
+<section id="club"><div class="wrap"><div class="band"><div><h2>Join the coffee club</h2><p>Fresh beans at your door every two weeks. Cancel anytime.</p></div>
+ <form onsubmit="event.preventDefault();this.innerHTML='<b>Thanks! Check your inbox ☕</b>'"><input type="email" placeholder="you@email.com" required><button class="btn" type="submit">Subscribe</button></form></div></div></section>
+<footer id="visit"><div class="wrap">Ember & Bean is a fictional brand — this page is a portfolio demo of a fast, responsive landing page (plain HTML/CSS, ~8 KB).</div></footer>
+</body></html>

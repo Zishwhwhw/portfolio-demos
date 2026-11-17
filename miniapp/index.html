@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pixel Plants — Telegram Mini App demo</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:var(--tg-theme-bg-color,#0f1420);--text:var(--tg-theme-text-color,#eef1f8);--hint:var(--tg-theme-hint-color,#8b93a7);
+--card:var(--tg-theme-secondary-bg-color,#1a2132);--accent:var(--tg-theme-button-color,#2aabee);--accent-text:var(--tg-theme-button-text-color,#fff)}
+*{box-sizing:border-box;margin:0}body{font-family:-apple-system,system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);padding:16px 16px 96px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}h1{font-size:20px}
+.hint{color:var(--hint);font-size:13px}.tabs{display:flex;gap:8px;overflow-x:auto;margin:12px 0 16px}
+.tab{padding:8px 14px;border-radius:999px;background:var(--card);color:var(--text);border:0;font-size:14px;white-space:nowrap}
+.tab.on{background:var(--accent);color:var(--accent-text)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.item{background:var(--card);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.pic{aspect-ratio:1;border-radius:14px;display:grid;place-items:center;font-size:56px}
+.row{display:flex;justify-content:space-between;align-items:center}.price{font-weight:700}
+.add{border:0;border-radius:12px;padding:8px 12px;background:var(--accent);color:var(--accent-text);font-weight:600}
+.qty{display:flex;align-items:center;gap:10px}.qty button{width:30px;height:30px;border-radius:10px;border:0;background:var(--accent);color:var(--accent-text);font-size:18px}
+#bar{position:fixed;left:12px;right:12px;bottom:12px;display:none;background:var(--accent);color:var(--accent-text);border:0;border-radius:16px;padding:16px;font-size:16px;font-weight:700}
+.demo{margin-top:22px;font-size:12px;color:var(--hint);text-align:center}
+</style>
+</head>
+<body>
+<header><div><h1>🪴 Pixel Plants</h1><div class="hint" id="hello">Plant shop inside Telegram</div></div><div class="hint" id="count"></div></header>
+<div class="tabs" id="tabs"></div>
+<div class="grid" id="grid"></div>
+<button id="bar"></button>
+<p class="demo">Portfolio demo of a Telegram Mini App: theme-aware UI, cart, MainButton checkout, haptics. Opened in a browser it runs in demo mode.</p>
+<script>
+const tg = window.Telegram?.WebApp; const inTg = !!(tg && tg.initData);
+if (tg) { tg.ready(); tg.expand(); }
+const user = tg?.initDataUnsafe?.user;
+if (user) document.getElementById('hello').textContent = `Hi, ${user.first_name}! Pick your plants`;
+const items = [
+  {id:1,n:'Monstera',e:'🌿',c:'Big',p:120,bg:'#1f6f4a'},{id:2,n:'Cactus trio',e:'🌵',c:'Small',p:45,bg:'#7a8b3c'},
+  {id:3,n:'Snake plant',e:'🪴',c:'Big',p:90,bg:'#2e5e4e'},{id:4,n:'Sunflower',e:'🌻',c:'Flowers',p:30,bg:'#b88a1d'},
+  {id:5,n:'Tulip box',e:'🌷',c:'Flowers',p:55,bg:'#a33b5c'},{id:6,n:'Bonsai',e:'🌳',c:'Small',p:150,bg:'#4b5e2a'}];
+const cats = ['All', ...new Set(items.map(i => i.c))]; let cat = 'All'; const cart = {};
+const haptic = t => tg?.HapticFeedback?.impactOccurred?.(t);
+function render() {
+  document.getElementById('tabs').innerHTML = cats.map(c => `<button class="tab ${c===cat?'on':''}" onclick="cat='${c}';render()">${c}</button>`).join('');
+  document.getElementById('grid').innerHTML = items.filter(i => cat==='All' || i.c===cat).map(i => `
+    <div class="item"><div class="pic" style="background:${i.bg}">${i.e}</div><b>${i.n}</b>
+    <div class="row"><span class="price">⭐ ${i.p}</span>${cart[i.id] ? `<span class="qty"><button onclick="chg(${i.id},-1)">−</button>${cart[i.id]}<button onclick="chg(${i.id},1)">+</button></span>` : `<button class="add" onclick="chg(${i.id},1)">Add</button>`}</div></div>`).join('');
+  const n = Object.values(cart).reduce((a,b)=>a+b,0), sum = items.reduce((s,i)=>s+(cart[i.id]||0)*i.p,0);
+  document.getElementById('count').textContent = n ? `${n} in cart` : '';
+  const label = `Checkout · ⭐ ${sum}`;
+  if (inTg) { n ? tg.MainButton.setText(label).show() : tg.MainButton.hide(); }
+  else { const b = document.getElementById('bar'); b.style.display = n ? 'block' : 'none'; b.textContent = label; }
+}
+function chg(id,d){ cart[id]=Math.max(0,(cart[id]||0)+d); if(!cart[id]) delete cart[id]; haptic('light'); render(); }
+function checkout(){
+  const order = items.filter(i=>cart[i.id]).map(i=>({id:i.id,qty:cart[i.id]}));
+  if (inTg) tg.sendData(JSON.stringify(order)); // the bot receives the order and sends a Stars invoice
+  else alert('Demo mode: in Telegram this sends the order to the bot, which replies with a Telegram Stars invoice.\n\n' + JSON.stringify(order));
+}
+if (inTg) tg.MainButton.onClick(checkout); else document.getElementById('bar').onclick = checkout;
+render();
+</script>
+</body>
+</html>
