@@ -1,14 +1,115 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Portfolio demos</title>
-<style>body{font-family:system-ui,sans-serif;max-width:720px;margin:60px auto;padding:0 20px;line-height:1.6}a{display:block;padding:16px 20px;margin:12px 0;border:2px solid #222;border-radius:14px;text-decoration:none;color:#222}a:hover{background:#222;color:#fff}</style></head>
-<body><h1>Portfolio demos</h1><p>Small, real projects that show how I build things.</p>
-<a href="saas/">🗓️ SaaS landing — Shiftwell (interactive rota demo, pricing calculator)</a>
-<a href="restaurant/">🥟 Restaurant website — Kinto (menu, cart, checkout, order → Telegram bot, EN/PL)</a>
-<a href="landing/">☕ Landing page — Ember &amp; Bean (responsive, plain HTML/CSS)</a>
-<a href="barber/">💈 Barbershop website — Brzytwa (PL, price list, online booking)</a>
-<a href="dentist/">🦷 Dental clinic website — Studio Uśmiechu (PL, services, doctors, online registration)</a>
-<a href="autoserwis/">🔧 Car service website — Tłok Serwis (PL, services, repair request form)</a>
-<a href="booking/">💅 Telegram Mini App — salon booking (services, masters, free slots, aiogram bot with reminders)</a>
-<a href="miniapp/">🪴 Telegram Mini App — Pixel Plants shop (cart, MainButton, Stars checkout)</a>
-<a href="scraper/">📊 Python scraper + dashboard — 1,000 books to CSV/Excel, charts, filters</a>
-<a href="https://github.com/Zishwhwhw/portfolio-demos/tree/main/bot">🤖 Telegram bot — aiogram 3, Stars payments, SQLite, admin alerts (source)</a>
-</body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Andrii Drymchenko — Telegram bots, Mini Apps and websites</title>
+<meta name="description" content="Portfolio of working demos: Telegram bots and Mini Apps in Python, fast websites and landing pages, web scrapers with dashboards.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F2F3F7;--ink:#151826;--muted:#5B6075;--line:#D9DCE6;--tg:#2A8BD6;--white:#fff}
+*{box-sizing:border-box;margin:0}
+body{font-family:Archivo,system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;font-size:17px}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--tg);outline-offset:3px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+header{padding:72px 0 40px}
+h1{font-size:clamp(40px,6vw,76px);font-weight:800;line-height:.98;letter-spacing:-.035em;max-width:16ch}
+.intro{font-size:20px;color:var(--muted);max-width:58ch;margin-top:22px}
+.stack{margin-top:22px;color:var(--muted);font-size:15px}
+.stack b{color:var(--ink);font-weight:600}
+h2{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:56px 0 6px}
+.lead{color:var(--muted);margin-bottom:22px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:28px}
+.grid.three{grid-template-columns:repeat(3,1fr)}
+.p{display:flex;flex-direction:column;gap:12px}
+.shot{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--white);aspect-ratio:16/10}
+.shot img{width:100%;height:100%;object-fit:cover;object-position:top;display:block;transition:transform .3s}
+.shot:hover img{transform:scale(1.02)}
+.p h3{font-size:21px;font-weight:600;letter-spacing:-.01em}
+.p p{color:var(--muted);font-size:16px}
+.links{display:flex;gap:16px;font-weight:600;font-size:15px}
+.links a{text-decoration-thickness:2px;text-underline-offset:4px}
+.tags{font-size:14px;color:var(--muted)}
+footer{margin:80px 0 50px;padding-top:24px;border-top:1px solid var(--line);color:var(--muted);font-size:15px}
+@media (max-width:860px){.grid,.grid.three{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.shot img{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Telegram bots, Mini Apps and websites that do real work</h1>
+    <p class="intro">I’m Andrii, a developer based in Poland. I build booking and ordering bots, Telegram Mini Apps, fast websites for small businesses and scrapers that turn websites into clean spreadsheets. Every project below is a working demo you can open and try.</p>
+    <p class="stack"><b>Stack:</b> Python (aiogram 3, FastAPI, requests, BeautifulSoup), JavaScript, HTML/CSS, SQLite/PostgreSQL, Telegram Bot API and WebApp SDK. English, Polish, Ukrainian, Russian.</p>
+  </header>
+
+  <main>
+    <h2>Telegram bots and Mini Apps</h2>
+    <p class="lead">Ordering, booking and payments without leaving the chat.</p>
+    <div class="grid">
+      <article class="p">
+        <a class="shot" href="booking/"><img src="thumbs/booking.jpg" alt="Salon booking Mini App with free time slots" loading="lazy"></a>
+        <h3>Salon booking Mini App with reminder bot</h3>
+        <p>Clients pick a service, a master and a free time. The aiogram bot re-checks the slot, stores the visit, alerts the salon and reminds the client 2 hours before.</p>
+        <p class="tags">Telegram WebApp, aiogram 3, SQLite, pytest</p>
+        <div class="links"><a href="booking/">Try it</a><a href="https://github.com/Zishwhwhw/portfolio-demos/tree/main/booking-bot">Bot code</a></div>
+      </article>
+      <article class="p">
+        <a class="shot" href="miniapp/"><img src="thumbs/miniapp.jpg" alt="Plant shop Mini App with cart" loading="lazy"></a>
+        <h3>Shop Mini App with Telegram Stars payments</h3>
+        <p>Catalog and cart inside Telegram, checkout through the MainButton, payment in Telegram Stars, order alerts for the shop owner.</p>
+        <p class="tags">Telegram WebApp, aiogram 3, Stars invoices, SQLite</p>
+        <div class="links"><a href="miniapp/">Try it</a><a href="https://github.com/Zishwhwhw/portfolio-demos/tree/main/bot">Bot code</a></div>
+      </article>
+    </div>
+
+    <h2>Websites and landing pages</h2>
+    <p class="lead">Fast, responsive, built around what the business needs visitors to do.</p>
+    <div class="grid">
+      <article class="p">
+        <a class="shot" href="saas/"><img src="thumbs/saas.jpg" alt="Shiftwell SaaS landing page with interactive staff rota" loading="lazy"></a>
+        <h3>SaaS landing page with a live product demo</h3>
+        <p>Visitors fill a staff rota right on the page, then size their plan with a pricing slider. Accessible, responsive, no framework.</p>
+        <p class="tags">HTML, CSS, JavaScript</p>
+        <div class="links"><a href="saas/">Open</a></div>
+      </article>
+      <article class="p">
+        <a class="shot" href="restaurant/"><img src="thumbs/restaurant.jpg" alt="Kinto restaurant website with menu and cart" loading="lazy"></a>
+        <h3>Restaurant site with online ordering</h3>
+        <p>Menu by category, cart, pickup or delivery checkout with validation. The kitchen receives the order in Telegram. English and Polish.</p>
+        <p class="tags">HTML, CSS, JavaScript, Telegram Bot API</p>
+        <div class="links"><a href="restaurant/">Open</a></div>
+      </article>
+    </div>
+    <div class="grid three" style="margin-top:28px">
+      <article class="p"><a class="shot" href="barber/"><img src="thumbs/barber.jpg" alt="Barbershop website" loading="lazy"></a><h3>Barbershop</h3><p>Price list, gallery and online booking. Polish.</p><div class="links"><a href="barber/">Open</a></div></article>
+      <article class="p"><a class="shot" href="dentist/"><img src="thumbs/dentist.jpg" alt="Dental clinic website" loading="lazy"></a><h3>Dental clinic</h3><p>Services with prices, doctors and online registration. Polish.</p><div class="links"><a href="dentist/">Open</a></div></article>
+      <article class="p"><a class="shot" href="autoserwis/"><img src="thumbs/autoserwis.jpg" alt="Car service website" loading="lazy"></a><h3>Car service</h3><p>Services, how repairs work and a request form. Polish.</p><div class="links"><a href="autoserwis/">Open</a></div></article>
+    </div>
+
+    <h2>Data and automation</h2>
+    <p class="lead">From a website to a spreadsheet you can use.</p>
+    <div class="grid">
+      <article class="p">
+        <a class="shot" href="scraper/"><img src="thumbs/scraper.jpg" alt="Dashboard of scraped book prices" loading="lazy"></a>
+        <h3>Scraper with a dashboard</h3>
+        <p>Collects 1,000 products in 11 seconds with pagination, retries and cleaning, exports CSV and Excel, and shows them in an interactive dashboard.</p>
+        <p class="tags">Python, requests, BeautifulSoup, openpyxl, pytest</p>
+        <div class="links"><a href="scraper/">Open dashboard</a><a href="https://github.com/Zishwhwhw/portfolio-demos/tree/main/scraper">Code</a></div>
+      </article>
+      <article class="p">
+        <a class="shot" href="landing/"><img src="thumbs/landing.jpg" alt="Coffee brand landing page" loading="lazy"></a>
+        <h3>Landing page in 8 KB</h3>
+        <p>A coffee brand page with no framework and no build step. It loads instantly even on slow mobile connections.</p>
+        <p class="tags">HTML, CSS</p>
+        <div class="links"><a href="landing/">Open</a></div>
+      </article>
+    </div>
+  </main>
+
+  <footer>All brands on this page are fictional. These are my own demo projects, built to show how I work. Source code: <a href="https://github.com/Zishwhwhw/portfolio-demos">github.com/Zishwhwhw/portfolio-demos</a></footer>
+</div>
+</body>
+</html>
