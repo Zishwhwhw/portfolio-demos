@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Studio Uśmiechu — gabinet stomatologiczny (demo)</title>
+<meta name="description" content="Demo strony gabinetu stomatologicznego: usługi, cennik, lekarze, rejestracja online.">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0f2a3a;--teal:#14a3a0;--mint:#e7f6f4;--muted:#5b7280;--bg:#fbfdfd}
+*{box-sizing:border-box;margin:0}body{font-family:Manrope,system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+.wrap{max-width:1120px;margin:auto;padding:0 24px}a{color:inherit}
+.top{background:var(--ink);color:#cfe3ea;font-size:14px;padding:8px 0}.top .wrap{display:flex;justify-content:space-between}
+nav{display:flex;justify-content:space-between;align-items:center;padding:20px 0}
+.logo{font-weight:800;font-size:22px}.logo i{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--teal);margin-right:8px}
+nav ul{display:flex;gap:26px;list-style:none;padding:0}nav a{text-decoration:none;font-weight:600;color:var(--muted)}
+.btn{display:inline-block;background:var(--teal);color:#fff;padding:14px 26px;border-radius:12px;text-decoration:none;font-weight:800;border:0;cursor:pointer;font:inherit;font-weight:800}
+.btn.light{background:#fff;color:var(--ink);box-shadow:0 0 0 1px #d6e6e6 inset}
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;padding:50px 0 80px}
+h1{font-size:clamp(38px,5.4vw,64px);line-height:1.08;letter-spacing:-.02em}h1 em{font-style:normal;color:var(--teal)}
+.lead{font-size:18px;color:var(--muted);margin:20px 0 30px;max-width:520px}
+.visual{aspect-ratio:1;border-radius:40px;background:radial-gradient(circle at 30% 25%,#bff0ea,#7fd6cf 45%,var(--teal));position:relative;overflow:hidden}
+.visual .tooth{position:absolute;left:24%;top:14%;width:52%;filter:drop-shadow(0 30px 40px #0f2a3a55)}
+.visual .badge{position:absolute;left:8%;bottom:9%;background:#fff;border-radius:16px;padding:14px 18px;font-weight:800;box-shadow:0 14px 30px -14px #0f2a3a66}
+.badge small{display:block;font-weight:600;color:var(--muted)}
+.trust{display:flex;gap:30px;margin-top:34px;color:var(--muted)}.trust b{display:block;font-size:26px;color:var(--ink)}
+section{padding:70px 0}h2{font-size:38px;letter-spacing:-.01em;margin-bottom:26px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.card{background:#fff;border:1px solid #e3eeee;border-radius:20px;padding:24px}.card .ic{width:44px;height:44px;border-radius:12px;background:var(--mint);margin-bottom:14px}
+.card p{color:var(--muted);font-size:15px}.card b{display:block;margin-top:10px;color:var(--teal)}
+.team{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.doc{background:var(--mint);border-radius:20px;padding:24px}
+.doc .ph{aspect-ratio:4/3;border-radius:14px;background:linear-gradient(160deg,#d5efec,#9fd9d3);margin-bottom:14px}
+.reg{background:var(--ink);color:#e6f1f3;border-radius:28px;padding:44px;display:grid;grid-template-columns:1fr 1fr;gap:36px}
+.reg p{color:#a9c3cc}form{display:grid;gap:12px}input,select{padding:14px;border-radius:12px;border:0;font:inherit}
+footer{padding:36px 0;color:var(--muted);font-size:14px}
+@media(max-width:860px){.hero,.reg{grid-template-columns:1fr}.cards{grid-template-columns:1fr 1fr}.team{grid-template-columns:1fr}nav ul,.top{display:none}}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap"><span>ul. Przykładowa 5 · pn–pt 8–20, sob 9–14</span><span>Przyjmujemy pacjentów z bólem tego samego dnia</span></div></div>
+<div class="wrap">
+ <nav><div class="logo"><i></i>Studio Uśmiechu</div><ul><li><a href="#uslugi">Usługi</a></li><li><a href="#lekarze">Lekarze</a></li><li><a href="#rejestracja">Rejestracja</a></li></ul><a class="btn" href="#rejestracja">Umów wizytę</a></nav>
+ <header class="hero">
+  <div><h1>Leczenie bez stresu.<br><em>Uśmiech</em> bez kompleksów.</h1>
+   <p class="lead">Przegląd, higienizacja, leczenie kanałowe i implanty w jednym miejscu. Zarezerwuj termin online w minutę — bez dzwonienia.</p>
+   <a class="btn" href="#rejestracja">Zarezerwuj online</a> <a class="btn light" href="#uslugi">Cennik usług</a>
+   <div class="trust"><div><b>12 lat</b>doświadczenia</div><div><b>8 000+</b>pacjentów</div><div><b>4.9★</b>opinie</div></div></div>
+  <div class="visual" aria-hidden="true"><svg class="tooth" viewBox="0 0 200 220"><path d="M100 28c-18-14-52-22-70-4-20 20-14 58-4 86 9 25 10 56 18 82 4 13 20 14 25 1 7-19 9-49 31-49s24 30 31 49c5 13 21 12 25-1 8-26 9-57 18-82 10-28 16-66-4-86-18-18-52-10-70 4z" fill="#fff"/><path d="M62 52c-10 4-16 14-16 28" stroke="#bfeee8" stroke-width="10" stroke-linecap="round" fill="none"/></svg><div class="badge">Najbliższy termin<small>jutro, 10:30</small></div></div>
+ </header>
+</div>
+<section id="uslugi"><div class="wrap"><h2>Usługi i ceny</h2><div class="cards">
+ <div class="card"><div class="ic"></div><h3>Przegląd</h3><p>Badanie, plan leczenia, zdjęcie RTG.</p><b>od 150 zł</b></div>
+ <div class="card"><div class="ic"></div><h3>Higienizacja</h3><p>Skaling, piaskowanie, polerowanie.</p><b>od 250 zł</b></div>
+ <div class="card"><div class="ic"></div><h3>Leczenie kanałowe</h3><p>Pod mikroskopem, w znieczuleniu.</p><b>od 900 zł</b></div>
+ <div class="card"><div class="ic"></div><h3>Implanty</h3><p>Konsultacja i plan cyfrowy 3D.</p><b>od 3 500 zł</b></div>
+</div></div></section>
+<section id="lekarze"><div class="wrap"><h2>Nasi lekarze</h2><div class="team">
+ <div class="doc"><div class="ph"></div><h3>lek. dent. Anna Nowak</h3><p>Stomatologia zachowawcza i estetyczna</p></div>
+ <div class="doc"><div class="ph"></div><h3>lek. dent. Piotr Wiśniewski</h3><p>Endodoncja mikroskopowa</p></div>
+ <div class="doc"><div class="ph"></div><h3>lek. dent. Ewa Zielińska</h3><p>Implantologia i protetyka</p></div>
+</div></div></section>
+<section id="rejestracja"><div class="wrap"><div class="reg">
+ <div><h2>Rejestracja online</h2><p>Wybierz usługę i dogodny dzień. Recepcja potwierdzi wizytę SMS-em w ciągu godziny, a dzień wcześniej wyślemy przypomnienie.</p></div>
+ <form onsubmit="event.preventDefault();this.innerHTML='<h3>Dziękujemy! 🦷</h3><p>Potwierdzimy termin SMS-em.</p>'">
+  <select required><option value="">Usługa</option><option>Przegląd</option><option>Higienizacja</option><option>Ból zęba — pilne</option></select>
+  <input type="date" required><input placeholder="Imię i nazwisko" required><input type="tel" placeholder="Telefon" required>
+  <button class="btn" type="submit">Wyślij zgłoszenie</button></form>
+</div></div></section>
+<footer><div class="wrap">Studio Uśmiechu to fikcyjny gabinet — strona demonstracyjna do portfolio (HTML/CSS/JS, responsywna, rejestracja online).</div></footer>
+</body></html>
