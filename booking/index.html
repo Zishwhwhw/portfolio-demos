@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lumi — book a visit (Telegram Mini App demo)</title>
+<meta name="description" content="Telegram Mini App for booking a beauty salon visit: services, masters, free time slots, confirmation through a bot. Portfolio demo.">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --bg:var(--tg-theme-bg-color,#fff);
+  --bg2:var(--tg-theme-secondary-bg-color,#F5F1F4);
+  --text:var(--tg-theme-text-color,#1D1A1F);
+  --hint:var(--tg-theme-hint-color,#8A8290);
+  --accent:var(--tg-theme-button-color,#6D2E5B);
+  --on-accent:var(--tg-theme-button-text-color,#fff);
+  --blush:#F7EAF0; --line:color-mix(in srgb,var(--hint) 25%,transparent);
+}
+*{box-sizing:border-box;margin:0}
+body{font:16px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,system-ui,sans-serif;color:var(--text);background:var(--bg2)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* browser presentation (outside Telegram) */
+.stage{min-height:100vh}
+body.browser .stage{display:grid;grid-template-columns:1fr 400px;gap:64px;max-width:1080px;margin:0 auto;padding:48px 28px;align-items:start}
+.pitch{display:none}
+body.browser .pitch{display:block;position:sticky;top:48px}
+.pitch h1{font-size:46px;line-height:1.05;letter-spacing:-.02em;margin-bottom:18px}
+.pitch p{color:#5c5560;font-size:18px;max-width:46ch;margin-bottom:14px}
+.pitch ul{padding-left:18px;color:#5c5560;display:grid;gap:6px;margin:18px 0}
+.pitch a{color:var(--accent);font-weight:600}
+body.browser .app{border-radius:36px;border:10px solid #1D1A1F;overflow:hidden;box-shadow:0 40px 80px -40px #1D1A1F99;height:820px;display:flex;flex-direction:column;background:var(--bg2)}
+.app{min-height:100vh;display:flex;flex-direction:column}
+body.browser .app{min-height:0}
+.scroll{flex:1;overflow-y:auto;padding-bottom:16px}
+
+/* header */
+.head{background:var(--accent);color:var(--on-accent);padding:22px 18px 26px}
+.head .salon{font-size:22px;font-weight:700;letter-spacing:-.01em}
+.head p{opacity:.8;font-size:14px}
+
+.block{background:var(--bg);margin:10px 0;padding:16px 16px 18px}
+.block h2{font-size:13px;font-weight:600;color:var(--hint);margin-bottom:10px;letter-spacing:.01em}
+
+/* services */
+.svc{display:grid;grid-template-columns:1fr auto;gap:0 12px;width:100%;text-align:left;background:none;border:0;padding:9px 0;border-bottom:1px solid var(--line)}
+.svc:last-child{border-bottom:0}
+.svc b{font-weight:600}
+.svc small{color:var(--hint);grid-column:1}
+.svc .p{grid-row:1/3;grid-column:2;align-self:center;font-weight:600}
+.svc[aria-pressed=true]{color:var(--accent)}
+.svc[aria-pressed=true] b::after{content:" ✓"}
+
+/* masters */
+.masters{display:flex;gap:14px;overflow-x:auto;padding-bottom:2px}
+.m{display:grid;justify-items:center;gap:6px;background:none;border:0;min-width:64px;font-size:13px}
+.m .ava{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:18px;background:var(--blush);color:var(--accent);border:2px solid transparent}
+.m[aria-pressed=true] .ava{border-color:var(--accent);box-shadow:0 0 0 3px var(--bg) inset}
+.m:disabled{opacity:.35;cursor:not-allowed}
+
+/* days */
+.days{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x mandatory}
+.d{scroll-snap-align:start;min-width:52px;border:1px solid var(--line);background:var(--bg);border-radius:14px;padding:8px 0;display:grid;justify-items:center;gap:0}
+.d small{font-size:12px;color:var(--hint)}
+.d b{font-size:18px}
+.d[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.d[aria-pressed=true] small{color:var(--on-accent);opacity:.8}
+.d:disabled{opacity:.35;cursor:not-allowed}
+
+/* slots */
+.part{margin-top:14px}
+.part h3{font-size:14px;font-weight:600;margin-bottom:8px}
+.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.s{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:9px 0;font-weight:600;font-variant-numeric:tabular-nums}
+.s[aria-pressed=true]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.none{color:var(--hint);font-size:15px}
+
+/* footer action (browser only; in Telegram we use MainButton) */
+.action{padding:12px 16px 16px;background:var(--bg);border-top:1px solid var(--line)}
+.action .sum{font-size:14px;color:var(--hint);margin-bottom:8px;min-height:20px}
+.action button{width:100%;border:0;border-radius:14px;padding:15px;background:var(--accent);color:var(--on-accent);font-weight:700}
+.action button:disabled{opacity:.4;cursor:not-allowed}
+body.tg .action{display:none}
+
+/* done */
+.done{padding:40px 22px;display:grid;gap:14px;text-align:center;justify-items:center}
+.done .tick{width:72px;height:72px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-size:36px;animation:pop .4s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes pop{from{transform:scale(.4);opacity:0}}
+.done h2{font-size:24px}
+.card{background:var(--bg);border-radius:18px;padding:16px;text-align:left;width:100%;display:grid;gap:4px}
+.card span{color:var(--hint);font-size:14px}
+.link{background:none;border:1px solid var(--line);border-radius:12px;padding:12px;width:100%;font-weight:600;color:var(--accent);text-decoration:none;display:block;text-align:center}
+.botmsg{background:#E3F0FC;border-radius:16px 16px 16px 4px;padding:12px 14px;text-align:left;font-size:14px;width:100%}
+.botmsg b{display:block;color:#2A6FB0;font-size:13px;margin-bottom:4px}
+@media (max-width:900px){body.browser .stage{grid-template-columns:1fr;gap:28px}body.browser .pitch{position:static}body.browser .app{height:760px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="stage">
+  <section class="pitch" aria-label="About this demo">
+    <h1>Booking a salon visit without leaving Telegram</h1>
+    <p>A Telegram Mini App for a beauty salon. The client picks a service, a master and a free time, and the bot confirms the visit, tells the salon and sends a reminder two hours before.</p>
+    <ul>
+      <li>Free times are calculated from opening hours, service length and the master’s existing visits</li>
+      <li>The bot checks the time again on the server, so two people can’t book the same slot</li>
+      <li>Uses the Telegram theme, MainButton and haptic feedback</li>
+      <li>Backend: Python, aiogram 3, SQLite, tests with pytest</li>
+    </ul>
+    <p>Lumi is a fictional salon. Portfolio demo by Andrii Drymchenko. <a href="https://github.com/Zishwhwhw/portfolio-demos/tree/main/booking-bot">Bot source code</a> · <a href="../">More demos</a></p>
+  </section>
+
+  <div class="app" id="app">
+    <div class="scroll" id="scroll">
+      <header class="head"><div class="salon">Lumi nails &amp; brows</div><p>ul. Przykładowa 3, Kraków · Mon–Sat 9:00–20:00</p></header>
+      <section class="block" aria-labelledby="h-svc"><h2 id="h-svc">Service</h2><div id="services"></div></section>
+      <section class="block" aria-labelledby="h-m"><h2 id="h-m">Master</h2><div class="masters" id="masters"></div></section>
+      <section class="block" aria-labelledby="h-d"><h2 id="h-d">Day and time</h2><div class="days" id="days"></div><div id="slots"></div></section>
+    </div>
+    <div class="action"><p class="sum" id="sum" aria-live="polite"></p><button id="book" disabled>Book</button></div>
+  </div>
+</div>
+
+<script>
+// Same rules as booking-bot/salon.py
+const SERVICES={mani:["Classic manicure",45,90],gel:["Gel manicure",75,140],pedi:["Pedicure",60,130],brows:["Brow shaping + tint",40,80],lam:["Brow lamination",60,150],lash:["Lash lift",60,160]};
+const MASTERS={ola:["Ola",["mani","gel","pedi"]],kasia:["Kasia",["mani","gel","brows","lam"]],iza:["Iza",["brows","lam","lash"]]};
+const OPEN=9*60, CLOSE=20*60, STEP=15;
+const tg=window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData?Telegram.WebApp:null;
+document.body.classList.add(tg?"tg":"browser");
+if(tg){tg.ready();tg.expand();}
+
+const st={service:null,master:"any",day:null,time:null};
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,"0");
+const hm=m=>`${pad(Math.floor(m/60))}:${pad(m%60)}`;
+const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const haptic=()=>tg&&tg.HapticFeedback&&tg.HapticFeedback.selectionChanged();
+
+// Demo occupancy: deterministic "existing visits" per master and day
+function busy(master,dayIso){
+  let seed=[...(master+dayIso)].reduce((a,c)=>a*31+c.charCodeAt(0)>>>0,7);
+  const rnd=()=>(seed=(seed*1103515245+12345)>>>0)/4294967296;
+  const out=[];let t=OPEN+Math.floor(rnd()*4)*15;
+  while(t<CLOSE-45){const len=[45,60,75][Math.floor(rnd()*3)];if(rnd()<.55)out.push([t,t+len]);t+=len+Math.floor(rnd()*3)*15}
+  return out;
+}
+function free(day,service,master){
+  if(!service||day.getDay()===0)return [];
+  const ms=master==="any"?Object.keys(MASTERS).filter(m=>MASTERS[m][1].includes(service)):[master];
+  const len=SERVICES[service][1],now=new Date(),set=new Set();
+  ms.forEach(m=>{const b=busy(m,iso(day));for(let t=OPEN;t+len<=CLOSE;t+=STEP){
+    const start=new Date(day);start.setHours(0,t,0,0);
+    if(start-now<30*60e3)continue;
+    if(b.every(([s,e])=>t+len<=s||t>=e))set.add(t)}});
+  return [...set].sort((a,b)=>a-b);
+}
+
+function renderServices(){
+  $("services").innerHTML=Object.entries(SERVICES).map(([k,[n,min,p]])=>`<button class="svc" aria-pressed="${st.service===k}" data-k="${k}"><b>${n}</b><small>${min} min</small><span class="p">${p} zł</span></button>`).join("");
+  $("services").querySelectorAll(".svc").forEach(b=>b.onclick=()=>{st.service=b.dataset.k;if(st.master!=="any"&&!MASTERS[st.master][1].includes(st.service))st.master="any";st.time=null;haptic();render()});
+}
+function renderMasters(){
+  const opts=[["any","Any master","✶"],...Object.entries(MASTERS).map(([k,[n]])=>[k,n,n[0]])];
+  $("masters").innerHTML=opts.map(([k,n,i])=>{const off=st.service&&k!=="any"&&!MASTERS[k][1].includes(st.service);
+    return `<button class="m" aria-pressed="${st.master===k}" data-k="${k}" ${off?"disabled":""}><span class="ava" aria-hidden="true">${i}</span>${n}</button>`}).join("");
+  $("masters").querySelectorAll(".m").forEach(b=>b.onclick=()=>{st.master=b.dataset.k;st.time=null;haptic();render()});
+}
+function dayOff(x){return x.getDay()===0||(st.service&&!free(x,st.service,st.master).length)||(!st.service&&!free(x,"mani","any").length)}
+function renderDays(){
+  const out=[],d=new Date();d.setHours(0,0,0,0);
+  for(let i=0;i<14;i++){const x=new Date(d);x.setDate(d.getDate()+i);out.push(x)}
+  if(!st.day||dayOff(st.day)){st.day=out.find(x=>!dayOff(x))||out[1];st.time=null}
+  $("days").innerHTML=out.map(x=>`<button class="d" data-d="${iso(x)}" aria-pressed="${iso(x)===iso(st.day)}" ${dayOff(x)?"disabled":""}><small>${x.toLocaleDateString("en-GB",{weekday:"short"})}</small><b>${x.getDate()}</b></button>`).join("");
+  $("days").querySelectorAll(".d").forEach(b=>b.onclick=()=>{st.day=new Date(b.dataset.d+"T00:00");st.time=null;haptic();render()});
+}
+function renderSlots(){
+  const el=$("slots");
+  if(!st.service){el.innerHTML=`<p class="none part">Choose a service to see free times.</p>`;return}
+  const f=free(st.day,st.service,st.master);
+  if(!f.length){el.innerHTML=`<p class="none part">No free times on this day. Try the next one.</p>`;return}
+  const parts=[["Morning",0,12*60],["Afternoon",12*60,17*60],["Evening",17*60,24*60]];
+  el.innerHTML=parts.map(([n,a,b])=>{const xs=f.filter(t=>t>=a&&t<b);return xs.length?`<div class="part"><h3>${n}</h3><div class="slots">${xs.map(t=>`<button class="s" data-t="${t}" aria-pressed="${st.time===t}">${hm(t)}</button>`).join("")}</div></div>`:""}).join("");
+  el.querySelectorAll(".s").forEach(b=>b.onclick=()=>{st.time=+b.dataset.t;haptic();render()});
+}
+function summary(){
+  if(!st.service||st.time==null)return null;
+  const [n,min,p]=SERVICES[st.service];
+  const day=st.day.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"});
+  return {text:`${n} · ${day}, ${hm(st.time)} · ${p} zł`,btn:`Book for ${day}, ${hm(st.time)}`};
+}
+function renderAction(){
+  const s=summary();
+  $("sum").textContent=s?s.text:"Pick a service and a time";
+  $("book").disabled=!s;$("book").textContent=s?s.btn:"Book";
+  if(tg){if(s){tg.MainButton.setText(s.btn);tg.MainButton.show()}else tg.MainButton.hide()}
+}
+function render(){renderServices();renderMasters();renderDays();renderSlots();renderAction()}
+
+function pickMaster(){
+  if(st.master!=="any")return st.master;
+  return Object.keys(MASTERS).find(m=>MASTERS[m][1].includes(st.service)&&free(st.day,st.service,m).includes(st.time));
+}
+function ics(start,min,title){
+  const f=d=>d.toISOString().replace(/[-:]/g,"").split(".")[0]+"Z",end=new Date(start.getTime()+min*60e3);
+  return `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${f(start)}\nDTEND:${f(end)}\nSUMMARY:${title}\nLOCATION:Lumi, ul. Przykładowa 3, Kraków\nEND:VEVENT\nEND:VCALENDAR`;
+}
+function book(){
+  const s=summary();if(!s)return;
+  const payload={service:st.service,master:st.master,date:iso(st.day),time:hm(st.time)};
+  if(tg){tg.HapticFeedback&&tg.HapticFeedback.notificationOccurred("success");tg.sendData(JSON.stringify(payload));return}
+  const m=pickMaster(),[n,min,p]=SERVICES[st.service],start=new Date(st.day);start.setHours(0,st.time,0,0);
+  const when=start.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})+" at "+hm(st.time);
+  document.querySelector(".action").hidden=true;
+  $("scroll").innerHTML=`<div class="done"><div class="tick" aria-hidden="true">✓</div><h2>You’re booked</h2>
+   <div class="card"><b>${n} with ${MASTERS[m][0]}</b><span>${when}</span><span>${min} min · ${p} zł · pay at the salon</span></div>
+   <div class="botmsg"><b>Lumi bot</b>✅ Booked: ${n} with ${MASTERS[m][0]}, ${when}. I’ll remind you 2 hours before.</div>
+   <a class="link" id="cal" download="lumi-visit.ics">Add to calendar</a>
+   <button class="link" id="again">Book another visit</button></div>`;
+  $("cal").href="data:text/calendar;charset=utf-8,"+encodeURIComponent(ics(start,min,`${n} at Lumi`));
+  $("again").onclick=()=>location.reload();
+}
+$("book").onclick=book;
+if(tg)tg.MainButton.onClick(book);
+render();
+</script>
+</body>
+</html>
