@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kinto — Georgian kitchen, order for pickup (portfolio demo)</title>
+<meta name="description" content="Restaurant website with menu, cart and online ordering that sends orders to the kitchen's Telegram bot. Fictional restaurant, portfolio demo.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--wall:#F7F7F4;--ink:#221A16;--ink2:#6A5F58;--pom:#9B1B30;--herb:#2E5E3E;--saffron:#E3A43A;--line:#E2DDD6;--white:#fff;
+--serif:"Young Serif",Georgia,serif;--sans:"Instrument Sans",system-ui,sans-serif}
+*{box-sizing:border-box;margin:0}
+body{font-family:var(--sans);font-size:17px;line-height:1.6;color:var(--ink);background:var(--wall)}
+a{color:inherit}button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--saffron);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1200px;margin:0 auto;padding:0 28px}
+
+header.top{display:flex;justify-content:space-between;align-items:center;padding:20px 0}
+.logo{font-family:var(--serif);font-size:30px;text-decoration:none;color:var(--pom)}
+.top nav{display:flex;gap:24px;align-items:center}
+.top nav a{text-decoration:none;font-weight:500;color:var(--ink2)}
+.lang{display:flex;border:1.5px solid var(--ink);border-radius:999px;overflow:hidden}
+.lang button{border:0;background:none;padding:6px 12px;font-weight:600;font-size:14px;cursor:pointer}
+.lang button[aria-pressed=true]{background:var(--ink);color:var(--wall)}
+
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:end;padding:40px 0 64px}
+.hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(44px,6.4vw,88px);line-height:1;letter-spacing:-.02em}
+.hero p{font-size:20px;color:var(--ink2);margin:24px 0 30px;max-width:46ch}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;padding:15px 26px;font-weight:600;border:0;cursor:pointer;text-decoration:none}
+.btn-pom{background:var(--pom);color:var(--white)}
+.btn-pom:hover{background:#7f1526}
+.btn-line{border:1.5px solid var(--ink);background:none}
+.facts{display:flex;gap:28px;margin-top:34px;color:var(--ink2);font-size:15px;flex-wrap:wrap}
+.facts b{display:block;color:var(--ink);font-size:17px}
+
+/* hero illustration: khachapuri boat */
+.boat{position:relative}
+.boat .disc{aspect-ratio:1/1;border-radius:50%;background:var(--herb);display:grid;place-items:center;overflow:hidden}
+.boat .disc svg{width:92%;transform:rotate(-14deg)}
+.boat .tag{position:absolute;left:-4%;bottom:6%;background:var(--wall);border-radius:16px;padding:12px 16px;font-size:14px;color:var(--ink2);box-shadow:0 10px 30px -12px #0006}
+.boat .tag b{display:block;color:var(--ink);font-size:17px}
+
+/* menu */
+#menu{padding:40px 0 80px}
+.menu-head{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:26px}
+h2{font-family:var(--serif);font-weight:400;font-size:clamp(34px,4.5vw,56px);line-height:1.05}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tabs button{border:1.5px solid var(--line);background:var(--white);border-radius:999px;padding:9px 16px;font-weight:600;cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--ink);border-color:var(--ink);color:var(--wall)}
+.layout{display:grid;grid-template-columns:1fr 380px;gap:36px;align-items:start}
+.items{display:grid;gap:0;border-top:1.5px solid var(--ink)}
+.item{display:grid;grid-template-columns:88px 1fr auto;gap:20px;align-items:center;padding:20px 0;border-bottom:1px solid var(--line)}
+.dish{width:88px;height:88px;border-radius:50%;display:grid;place-items:center}
+.item h3{font-size:19px;font-weight:600}
+.item p{color:var(--ink2);font-size:15px;max-width:52ch}
+.item .meta{display:flex;gap:10px;align-items:center;margin-top:4px;font-size:14px}
+.badge{color:var(--herb);font-weight:600}
+.buy{display:flex;flex-direction:column;align-items:end;gap:8px}
+.price{font-weight:700;font-size:18px}
+.step{display:flex;align-items:center;border:1.5px solid var(--ink);border-radius:999px;overflow:hidden}
+.step button{width:36px;height:36px;border:0;background:none;font-size:20px;cursor:pointer}
+.step button:hover{background:#efebe6}
+.step span{min-width:24px;text-align:center;font-weight:700}
+.add{border:1.5px solid var(--ink);background:none;border-radius:999px;padding:7px 16px;font-weight:600;cursor:pointer}
+.add:hover{background:var(--ink);color:var(--wall)}
+
+/* cart */
+.cart{position:sticky;top:20px;background:var(--white);border:1.5px solid var(--ink);border-radius:22px;padding:24px}
+.cart h3{font-family:var(--serif);font-weight:400;font-size:28px;margin-bottom:6px}
+.cart .empty{color:var(--ink2);padding:18px 0}
+.lines{list-style:none;padding:0;margin:12px 0;display:grid;gap:10px}
+.lines li{display:flex;justify-content:space-between;gap:10px;font-size:15px}
+.lines li span:first-child b{font-weight:700;margin-right:6px}
+.sum{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:12px;font-weight:700;font-size:19px}
+.mode{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:18px 0 12px;background:#F1EEEA;border-radius:999px;padding:4px}
+.mode button{border:0;background:none;border-radius:999px;padding:9px;font-weight:600;cursor:pointer}
+.mode button[aria-pressed=true]{background:var(--white);box-shadow:0 2px 8px -3px #0003}
+form.checkout{display:grid;gap:10px}
+form.checkout label{font-size:14px;font-weight:600;display:grid;gap:4px}
+form.checkout input,form.checkout select{font:inherit;padding:11px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--wall)}
+form.checkout input[aria-invalid=true]{border-color:var(--pom)}
+.err{color:var(--pom);font-size:14px;min-height:18px}
+.cart .btn{width:100%;margin-top:6px}
+.note{font-size:13px;color:var(--ink2)}
+
+/* confirmation with telegram preview */
+.done{display:grid;gap:14px}
+.done h3{color:var(--herb)}
+.tg{background:#E7EEF6;border-radius:18px;padding:14px}
+.tg .who{font-size:13px;font-weight:700;color:#2A6FB0;margin-bottom:6px}
+.bubble{background:var(--white);border-radius:14px 14px 14px 4px;padding:12px 14px;font-size:14px;line-height:1.5;white-space:pre-line;box-shadow:0 1px 2px #0002}
+.bubble .t{display:block;text-align:right;font-size:11px;color:#8b98a6;margin-top:4px}
+.tgbtns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.tgbtns span{background:#fff9;border-radius:10px;text-align:center;padding:7px;font-size:13px;font-weight:600;color:#2A6FB0}
+
+/* info */
+.info{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;padding:70px 0;border-top:1.5px solid var(--ink)}
+.info h3{font-family:var(--serif);font-weight:400;font-size:26px;margin-bottom:8px}
+.info p{color:var(--ink2)}
+footer{padding:30px 0 60px;font-size:14px;color:var(--ink2);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+/* mobile cart bar */
+.bar{display:none}
+@media (max-width:920px){
+  .hero,.layout,.info{grid-template-columns:1fr}
+  .boat{max-width:420px}
+  .top nav a{display:none}
+  .cart{position:fixed;inset:auto 0 0 0;border-radius:22px 22px 0 0;max-height:85vh;overflow:auto;transform:translateY(105%);transition:transform .3s;z-index:20}
+  .cart.open{transform:none}
+  .bar{display:flex;position:fixed;left:12px;right:12px;bottom:12px;z-index:10;justify-content:space-between;align-items:center;background:var(--pom);color:var(--white);border-radius:999px;padding:14px 22px;font-weight:700;border:0;cursor:pointer}
+  .bar[hidden]{display:none}
+  .item{grid-template-columns:64px 1fr;}
+  .dish{width:64px;height:64px}
+  .buy{grid-column:2;flex-direction:row;justify-content:space-between;align-items:center}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="#">Kinto</a>
+    <nav aria-label="Main">
+      <a href="#menu" data-i="navMenu">Menu</a>
+      <a href="#visit" data-i="navVisit">Visit us</a>
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button type="button" data-lang="pl" aria-pressed="false">PL</button>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <h1 data-i="h1">Khinkali folded by hand, every morning at ten.</h1>
+        <p data-i="lead">Georgian home cooking in Kazimierz. Order online and pick it up hot, or have it delivered within 3 km.</p>
+        <a class="btn btn-pom" href="#menu" data-i="cta">Order for pickup</a>
+        <div class="facts">
+          <div><b data-i="f1b">25 minutes</b><span data-i="f1">average pickup time</span></div>
+          <div><b data-i="f2b">Open 12–22</b><span data-i="f2">every day</span></div>
+          <div><b data-i="f3b">Free delivery</b><span data-i="f3">from 80 zł</span></div>
+        </div>
+      </div>
+      <div class="boat" aria-hidden="true">
+        <div class="disc"><svg viewBox="0 0 300 220">
+          <ellipse cx="150" cy="118" rx="128" ry="86" fill="#F7F7F4"/>
+          <ellipse cx="150" cy="118" rx="112" ry="72" fill="none" stroke="#E2DDD6" stroke-width="3"/>
+          <path d="M28 112 C70 52 230 52 272 112 C268 118 262 120 256 118 C220 168 80 168 44 118 C38 120 32 118 28 112Z" fill="#C9822F"/>
+          <path d="M34 112 C74 60 226 60 266 112 C226 160 74 160 34 112Z" fill="#E3A43A"/>
+          <path d="M72 112 C102 80 198 80 228 112 C198 144 102 144 72 112Z" fill="#B86E25" opacity=".35"/>
+          <path d="M78 112 C106 86 194 86 222 112 C194 138 106 138 78 112Z" fill="#FBE7A6"/>
+          <circle cx="112" cy="104" r="6" fill="#F7D57A"/><circle cx="190" cy="120" r="5" fill="#F7D57A"/><circle cx="128" cy="126" r="4" fill="#F7D57A"/>
+          <circle cx="154" cy="110" r="19" fill="#F6B021"/><circle cx="148" cy="104" r="6" fill="#FFF1B8"/>
+          <rect x="176" y="94" width="24" height="18" rx="4" fill="#FFF7DA" transform="rotate(14 188 103)"/>
+          <path d="M100 96l4 3M200 128l3-4M124 132l-3 3" stroke="#2E5E3E" stroke-width="3" stroke-linecap="round"/>
+        </svg></div>
+        <div class="tag"><b data-i="tagB">Adjarian khachapuri</b><span data-i="tag">Our most ordered dish</span></div>
+      </div>
+    </section>
+
+    <section id="menu" aria-labelledby="menu-title">
+      <div class="menu-head">
+        <h2 id="menu-title" data-i="menuT">Today’s menu</h2>
+        <div class="tabs" role="tablist" aria-label="Menu categories"></div>
+      </div>
+      <div class="layout">
+        <div class="items" id="items" role="tabpanel"></div>
+        <aside class="cart" id="cart" aria-labelledby="cart-title">
+          <h3 id="cart-title" data-i="cartT">Your order</h3>
+          <div id="cart-body"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="info" id="visit">
+      <div><h3 data-i="i1t">Find us</h3><p data-i="i1">ul. Przykładowa 7, Kraków (Kazimierz). Five minutes from the tram stop.</p></div>
+      <div><h3 data-i="i2t">Opening hours</h3><p data-i="i2">Every day 12:00–22:00. Kitchen takes the last order at 21:30.</p></div>
+      <div><h3 data-i="i3t">Group bookings</h3><p data-i="i3">Tables for up to 20 people. Write to us in Telegram and we’ll confirm the same day.</p></div>
+    </section>
+  </main>
+
+  <footer>
+    <span data-i="foot">Kinto is a fictional restaurant. Portfolio demo by Andrii Drymchenko: menu, cart and checkout in vanilla JS. In production the order goes to the kitchen through a Telegram bot API.</span>
+    <a href="../" data-i="more">More demos</a>
+  </footer>
+</div>
+<button class="bar" id="bar" hidden><span id="bar-count"></span><span id="bar-sum"></span></button>
+
+<script>
+const T={
+ en:{navMenu:"Menu",navVisit:"Visit us",h1:"Khinkali folded by hand, every morning at ten.",lead:"Georgian home cooking in Kazimierz. Order online and pick it up hot, or have it delivered within 3 km.",cta:"Order for pickup",f1b:"25 minutes",f1:"average pickup time",f2b:"Open 12–22",f2:"every day",f3b:"Free delivery",f3:"from 80 zł",tagB:"Adjarian khachapuri",tag:"Our most ordered dish",menuT:"Today’s menu",cartT:"Your order",i1t:"Find us",i1:"ul. Przykładowa 7, Kraków (Kazimierz). Five minutes from the tram stop.",i2t:"Opening hours",i2:"Every day 12:00–22:00. Kitchen takes the last order at 21:30.",i3t:"Group bookings",i3:"Tables for up to 20 people. Write to us in Telegram and we’ll confirm the same day.",foot:"Kinto is a fictional restaurant. Portfolio demo by Andrii Drymchenko: menu, cart and checkout in vanilla JS. In production the order goes to the kitchen through a Telegram bot API.",more:"More demos",
+  empty:"Nothing here yet. Add a dish from the menu to start your order.",add:"Add",total:"Total",pickup:"Pickup",delivery:"Delivery",name:"Name",phone:"Phone",addr:"Delivery address",time:"Ready at",asap:"As soon as possible",place:"Place order",fee:"Delivery",free:"free",
+  errName:"Enter your name so we know whose order it is.",errPhone:"Enter a phone number with at least 9 digits.",errAddr:"Enter the street and building number for delivery.",
+  sent:"Order placed",sentP:"The kitchen got your order. You’ll get a text when it’s ready.",preview:"This is what the restaurant sees in Telegram:",again:"Start a new order",accept:"✅ Accept",reject:"✖ Decline",items:"items",veg:"Vegetarian",spicy:"Spicy",
+  cats:{khinkali:"Khinkali",khachapuri:"Khachapuri",mains:"Mains",drinks:"Drinks"}},
+ pl:{navMenu:"Menu",navVisit:"Jak dojechać",h1:"Chinkali lepione ręcznie, codziennie o dziesiątej.",lead:"Gruzińska kuchnia domowa na Kazimierzu. Zamów online i odbierz na ciepło albo z dostawą do 3 km.",cta:"Zamów z odbiorem",f1b:"25 minut",f1:"średni czas odbioru",f2b:"Czynne 12–22",f2:"codziennie",f3b:"Darmowa dostawa",f3:"od 80 zł",tagB:"Chaczapuri adżarskie",tag:"Najczęściej zamawiane",menuT:"Dzisiejsze menu",cartT:"Twoje zamówienie",i1t:"Gdzie jesteśmy",i1:"ul. Przykładowa 7, Kraków (Kazimierz). Pięć minut od przystanku tramwajowego.",i2t:"Godziny otwarcia",i2:"Codziennie 12:00–22:00. Ostatnie zamówienie kuchnia przyjmuje o 21:30.",i3t:"Rezerwacje grupowe",i3:"Stoliki do 20 osób. Napisz do nas na Telegramie, potwierdzimy tego samego dnia.",foot:"Kinto to fikcyjna restauracja. Demo do portfolio — Andrii Drymchenko: menu, koszyk i zamówienie w czystym JS. W wersji produkcyjnej zamówienie trafia do kuchni przez bota Telegram.",more:"Więcej demo",
+  empty:"Koszyk jest pusty. Dodaj danie z menu, aby rozpocząć zamówienie.",add:"Dodaj",total:"Razem",pickup:"Odbiór",delivery:"Dostawa",name:"Imię",phone:"Telefon",addr:"Adres dostawy",time:"Gotowe na",asap:"Jak najszybciej",place:"Złóż zamówienie",fee:"Dostawa",free:"gratis",
+  errName:"Podaj imię, żebyśmy wiedzieli, czyje to zamówienie.",errPhone:"Podaj numer telefonu (minimum 9 cyfr).",errAddr:"Podaj ulicę i numer budynku do dostawy.",
+  sent:"Zamówienie złożone",sentP:"Kuchnia ma Twoje zamówienie. Wyślemy SMS, gdy będzie gotowe.",preview:"Tak restauracja widzi zamówienie w Telegramie:",again:"Nowe zamówienie",accept:"✅ Przyjmij",reject:"✖ Odrzuć",items:"szt.",veg:"Wegetariańskie",spicy:"Ostre",
+  cats:{khinkali:"Chinkali",khachapuri:"Chaczapuri",mains:"Dania główne",drinks:"Napoje"}}
+};
+const MENU=[
+ {id:1,cat:"khinkali",price:32,col:"#E9DCC8",tags:[],n:{en:"Khinkali with beef and pork",pl:"Chinkali z wołowiną i wieprzowiną"},d:{en:"Five dumplings, peppery broth inside. Eat them by the knot.",pl:"Pięć pierożków z bulionem w środku. Jemy, trzymając za supełek."}},
+ {id:2,cat:"khinkali",price:30,col:"#EFE6D2",tags:["veg"],n:{en:"Khinkali with mushrooms",pl:"Chinkali z grzybami"},d:{en:"Forest mushrooms, onion and fresh herbs.",pl:"Grzyby leśne, cebula i świeże zioła."}},
+ {id:3,cat:"khinkali",price:31,col:"#F3EBDB",tags:["veg"],n:{en:"Khinkali with cheese",pl:"Chinkali z serem"},d:{en:"Sulguni and cottage cheese, butter on top.",pl:"Sulguni i twaróg, z masłem."}},
+ {id:4,cat:"khachapuri",price:38,col:"#F2C76A",tags:["veg"],n:{en:"Adjarian khachapuri",pl:"Chaczapuri adżarskie"},d:{en:"Bread boat with melted cheese, egg yolk and butter. Stir it all at the table.",pl:"Łódka z ciasta z serem, żółtkiem i masłem. Mieszasz przy stole."}},
+ {id:5,cat:"khachapuri",price:34,col:"#F4D89A",tags:["veg"],n:{en:"Imeruli khachapuri",pl:"Chaczapuri imeruli"},d:{en:"Round flatbread filled with two cheeses.",pl:"Okrągły placek z dwoma rodzajami sera."}},
+ {id:6,cat:"mains",price:42,col:"#C9A086",tags:["spicy"],n:{en:"Chakapuli",pl:"Czakapuli"},d:{en:"Lamb stewed with tarragon, white wine and green plum.",pl:"Jagnięcina duszona z estragonem, białym winem i zieloną śliwką."}},
+ {id:7,cat:"mains",price:29,col:"#B9C99A",tags:["veg"],n:{en:"Pkhali trio",pl:"Trio pchali"},d:{en:"Spinach, beetroot and bean pâtés with walnuts and pomegranate.",pl:"Pasty ze szpinaku, buraka i fasoli z orzechami i granatem."}},
+ {id:8,cat:"mains",price:36,col:"#D99A6C",tags:["spicy"],n:{en:"Mtsvadi",pl:"Mcwadi"},d:{en:"Pork skewers from the grill, onions and tkemali sauce.",pl:"Szaszłyk z grilla, cebula i sos tkemali."}},
+ {id:9,cat:"drinks",price:12,col:"#E6B9C2",tags:[],n:{en:"Tarragon lemonade",pl:"Lemoniada estragonowa"},d:{en:"Bright green and not too sweet. 0.33 l.",pl:"Intensywnie zielona i niezbyt słodka. 0,33 l."}},
+ {id:10,cat:"drinks",price:14,col:"#C9B6D8",tags:[],n:{en:"Pear lemonade",pl:"Lemoniada gruszkowa"},d:{en:"Georgian classic. 0.33 l.",pl:"Gruziński klasyk. 0,33 l."}}
+];
+let lang="en", cat="khinkali", cart={}, mode="pickup", placed=false;
+const $=s=>document.querySelector(s);
+const t=k=>T[lang][k];
+const zl=n=>lang==="pl"?`${n} zł`:`${n} zł`;
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const ICON={
+ khinkali:`<path d="M24 58c0-16 9-26 20-30 11 4 20 14 20 30-6 5-34 5-40 0z" fill="#fff" stroke="#221A16" stroke-width="2.5"/><path d="M44 28c-3-6-1-10 0-12 1 2 3 6 0 12" fill="#fff" stroke="#221A16" stroke-width="2.5"/><path d="M33 52c3-10 7-16 11-22M55 52c-3-10-7-16-11-22M44 56V30" stroke="#221A16" stroke-width="1.8" fill="none"/>`,
+ khachapuri:`<path d="M14 46c10-14 50-14 60 0-10 14-50 14-60 0z" fill="#E3A43A" stroke="#221A16" stroke-width="2.5"/><path d="M28 46c6-7 26-7 32 0-6 7-26 7-32 0z" fill="#FBE7A6"/><circle cx="44" cy="45" r="6" fill="#F6B021"/>`,
+ mains:`<path d="M16 42h56c0 14-12 24-28 24S16 56 16 42z" fill="#fff" stroke="#221A16" stroke-width="2.5"/><path d="M24 42c4-6 10-8 14-4 4-6 12-6 16 0 4-3 9-1 10 4" fill="none" stroke="#9B1B30" stroke-width="3" stroke-linecap="round"/><path d="M40 30c-2-4 2-6 0-10M50 30c-2-4 2-6 0-10" stroke="#221A16" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+ drinks:`<path d="M30 22h28l-4 46H34z" fill="#fff" stroke="#221A16" stroke-width="2.5"/><path d="M32 36h24l-3 30H35z" fill="#2E5E3E" opacity=".75"/><path d="M52 22l8-10" stroke="#221A16" stroke-width="2.5" stroke-linecap="round"/>`};
+function dishSvg(c,cat){return `<svg class="dish" viewBox="0 0 88 88" style="background:${c}" aria-hidden="true">${ICON[cat]}</svg>`}
+function renderText(){document.querySelectorAll("[data-i]").forEach(e=>{const v=t(e.dataset.i);if(v)e.textContent=v});document.documentElement.lang=lang}
+function renderTabs(){
+  const tabs=$(".tabs");tabs.innerHTML=Object.entries(T[lang].cats).map(([k,v])=>`<button role="tab" aria-selected="${k===cat}" data-cat="${k}">${v}</button>`).join("");
+  tabs.querySelectorAll("button").forEach(b=>b.onclick=()=>{cat=b.dataset.cat;renderTabs();renderItems()});
+}
+function renderItems(){
+  $("#items").innerHTML=MENU.filter(m=>m.cat===cat).map(m=>{
+    const q=cart[m.id]||0;
+    const tags=m.tags.map(x=>`<span class="badge">${t(x)}</span>`).join("");
+    const ctl=q?`<div class="step"><button aria-label="Remove one" data-dec="${m.id}">−</button><span aria-live="polite">${q}</span><button aria-label="Add one" data-inc="${m.id}">+</button></div>`:`<button class="add" data-inc="${m.id}">${t("add")}</button>`;
+    return `<article class="item">${dishSvg(m.col,m.cat)}<div><h3>${m.n[lang]}</h3><p>${m.d[lang]}</p><div class="meta">${tags}</div></div><div class="buy"><span class="price">${zl(m.price)}</span>${ctl}</div></article>`;
+  }).join("");
+  $("#items").querySelectorAll("[data-inc]").forEach(b=>b.onclick=()=>{cart[b.dataset.inc]=(cart[b.dataset.inc]||0)+1;placed=false;update()});
+  $("#items").querySelectorAll("[data-dec]").forEach(b=>b.onclick=()=>{const id=b.dataset.dec;cart[id]--;if(!cart[id])delete cart[id];update()});
+}
+function totals(){
+  const lines=Object.entries(cart).map(([id,q])=>{const m=MENU.find(x=>x.id==id);return {m,q,sum:m.price*q}});
+  const sub=lines.reduce((a,l)=>a+l.sum,0), fee=mode==="delivery"&&sub<80?9:0;
+  return {lines,sub,fee,total:sub+fee,count:lines.reduce((a,l)=>a+l.q,0)};
+}
+function slots(){const o=[`<option>${t("asap")}</option>`];const d=new Date();d.setMinutes(Math.ceil((d.getMinutes()+30)/15)*15,0,0);for(let i=0;i<6;i++){o.push(`<option>${d.toTimeString().slice(0,5)}</option>`);d.setMinutes(d.getMinutes()+15)}return o.join("")}
+function renderCart(){
+  const body=$("#cart-body"), s=totals();
+  if(!s.count){body.innerHTML=`<p class="empty">${t("empty")}</p>`;return}
+  body.innerHTML=`<ul class="lines">${s.lines.map(l=>`<li><span><b>${l.q}×</b>${l.m.n[lang]}</span><span>${zl(l.sum)}</span></li>`).join("")}
+   ${mode==="delivery"?`<li><span>${t("fee")}</span><span>${s.fee?zl(s.fee):t("free")}</span></li>`:""}</ul>
+   <div class="sum"><span>${t("total")}</span><span>${zl(s.total)}</span></div>
+   <div class="mode" role="group"><button type="button" data-mode="pickup" aria-pressed="${mode==="pickup"}">${t("pickup")}</button><button type="button" data-mode="delivery" aria-pressed="${mode==="delivery"}">${t("delivery")}</button></div>
+   <form class="checkout" novalidate>
+     <label>${t("name")}<input name="name" autocomplete="name"></label>
+     <label>${t("phone")}<input name="phone" type="tel" autocomplete="tel" placeholder="+48 600 000 000"></label>
+     ${mode==="delivery"?`<label>${t("addr")}<input name="addr" autocomplete="street-address"></label>`:""}
+     <label>${t("time")}<select name="time">${slots()}</select></label>
+     <p class="err" role="alert"></p>
+     <button class="btn btn-pom" type="submit">${t("place")} · ${zl(s.total)}</button>
+   </form>`;
+  body.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{mode=b.dataset.mode;renderCart()});
+  body.querySelector("form").onsubmit=submit;
+}
+function submit(e){
+  e.preventDefault();const f=e.target,err=f.querySelector(".err");f.querySelectorAll("input").forEach(i=>i.removeAttribute("aria-invalid"));
+  const name=f.name.value.trim(),phone=f.phone.value.replace(/\D/g,""),addr=f.addr?f.addr.value.trim():"";
+  let bad=null;
+  if(!name)bad=["name","errName"];else if(phone.length<9)bad=["phone","errPhone"];else if(mode==="delivery"&&!/\d/.test(addr))bad=["addr","errAddr"];
+  if(bad){f[bad[0]].setAttribute("aria-invalid","true");f[bad[0]].focus();err.textContent=t(bad[1]);return}
+  const s=totals(),no=Math.floor(1000+Math.random()*9000),now=new Date().toTimeString().slice(0,5);
+  const msg=`🧾 Order #${no}\n${s.lines.map(l=>`${l.q}× ${l.m.n.pl}`).join("\n")}\n\n${mode==="delivery"?"🛵 Dostawa: "+esc(addr):"🏃 Odbiór osobisty"} · ${f.time.selectedIndex===0?"jak najszybciej":esc(f.time.value)}\n👤 ${esc(name)}, +${phone}\n💰 ${s.total} zł`;
+  $("#cart-body").innerHTML=`<div class="done"><h3>${t("sent")}</h3><p>${t("sentP")}</p><p class="note">${t("preview")}</p>
+    <div class="tg"><div class="who">Kinto Kitchen Bot</div><div class="bubble">${msg}<span class="t">${now}</span></div><div class="tgbtns"><span>${t("accept")}</span><span>${t("reject")}</span></div></div>
+    <button class="btn btn-line" type="button" id="again">${t("again")}</button></div>`;
+  cart={};placed=true;renderItems();updateBar();
+  $("#again").onclick=()=>{placed=false;update()};
+}
+function updateBar(){const s=totals(),bar=$("#bar");bar.hidden=!s.count&&!placed;$("#bar-count").textContent=s.count?`${t("cartT")} · ${s.count} ${t("items")}`:t("cartT");$("#bar-sum").textContent=s.count?zl(s.total):""}
+function update(){renderItems();if(!placed)renderCart();updateBar()}
+$("#bar").onclick=()=>$("#cart").classList.toggle("open");
+document.querySelectorAll("[data-lang]").forEach(b=>b.onclick=()=>{lang=b.dataset.lang;document.querySelectorAll("[data-lang]").forEach(x=>x.setAttribute("aria-pressed",x===b));renderText();renderTabs();update()});
+renderText();renderTabs();update();
+</script>
+</body>
+</html>
