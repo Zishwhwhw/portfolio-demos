@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Book catalogue dashboard — Python scraper demo</title>
+<meta name="description" content="Dashboard for data collected by a Python web scraper: 1,000 books with prices, ratings and stock. Portfolio demo.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F3F5F2;--ink:#14211B;--muted:#5F6B64;--green:#1F6F50;--green2:#CFE3D8;--amber:#C98A1B;--line:#D8DED9;--white:#fff}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Public Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums}
+a{color:var(--green)}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding:36px 28px 60px}
+header{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;padding-bottom:26px;border-bottom:2px solid var(--ink)}
+h1{font-size:clamp(30px,4vw,48px);font-weight:800;letter-spacing:-.025em;line-height:1.05}
+.meta{color:var(--muted);margin-top:8px}
+.dl{display:flex;gap:8px}
+.btn{display:inline-block;padding:10px 16px;border-radius:8px;border:1.5px solid var(--ink);font-weight:600;text-decoration:none;color:var(--ink);background:var(--white)}
+.btn.primary{background:var(--ink);color:var(--white)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line)}
+.kpi{padding:22px 0}
+.kpi + .kpi{padding-left:24px;border-left:1px solid var(--line)}
+.kpi b{display:block;font-size:34px;font-weight:800;letter-spacing:-.02em}
+.kpi span{color:var(--muted)}
+.charts{display:grid;grid-template-columns:1.6fr 1fr;gap:28px;margin:30px 0}
+.panel{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:22px}
+.panel h2{font-size:17px;font-weight:700}
+.panel p.sub{color:var(--muted);font-size:14px;margin:2px 0 14px}
+svg text{font-family:inherit}
+.bar{cursor:pointer}
+.bar rect.fill{fill:var(--green2);transition:fill .15s}
+.bar:hover rect.fill,.bar.on rect.fill{fill:var(--green)}
+.bar.on text.lbl{font-weight:700}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.tools input,.tools select{font:inherit;padding:9px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--white)}
+.tools input{flex:1;min-width:220px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--green);color:var(--white);border-radius:999px;padding:6px 12px;font-weight:600;border:0;cursor:pointer}
+.count{color:var(--muted);margin-left:auto}
+table{width:100%;border-collapse:collapse;background:var(--white);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line)}
+th{font-size:13px;color:var(--muted);font-weight:600;background:#F8FAF8}
+th button{all:unset;cursor:pointer}
+th button:focus-visible{outline:3px solid var(--amber)}
+th[aria-sort] button::after{content:" ↓";color:var(--green)}
+th[aria-sort=ascending] button::after{content:" ↑"}
+td.num{text-align:right}th.num{text-align:right}
+.stars{color:var(--amber);letter-spacing:1px}
+.out{color:#A3402B;font-weight:600}
+.pager{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:12px}
+.pager button{font:inherit;padding:7px 12px;border-radius:8px;border:1.5px solid var(--line);background:var(--white);cursor:pointer}
+.pager button:disabled{opacity:.4;cursor:default}
+footer{margin-top:40px;color:var(--muted);font-size:14px}
+code{background:#E6EBE7;padding:1px 6px;border-radius:5px}
+@media (max-width:900px){.charts{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.kpi:nth-child(3){padding-left:0;border-left:0}.hide-m{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1 id="title">Book catalogue, scraped and cleaned</h1>
+      <p class="meta" id="meta">Loading data…</p>
+    </div>
+    <div class="dl"><a class="btn" href="data/books.csv" download>Download CSV</a><a class="btn primary" href="data/books.xlsx" download>Download Excel</a></div>
+  </header>
+
+  <section class="kpis" id="kpis" aria-label="Summary"></section>
+
+  <section class="charts">
+    <div class="panel">
+      <h2>Average price by category</h2>
+      <p class="sub">The 15 largest categories. Click a bar to filter the table.</p>
+      <svg id="cat" role="img" aria-label="Average price by category"></svg>
+    </div>
+    <div class="panel">
+      <h2>Do better-rated books cost more?</h2>
+      <p class="sub">Hardly. Average price is almost the same at every rating.</p>
+      <svg id="rat" role="img" aria-label="Average price by star rating"></svg>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-h">
+    <h2 id="t-h" style="font-size:20px;margin-bottom:12px">All books</h2>
+    <div class="tools">
+      <label class="hide-m" for="q" style="position:absolute;left:-9999px">Search titles</label>
+      <input id="q" type="search" placeholder="Search titles">
+      <select id="minr" aria-label="Minimum rating"><option value="0">Any rating</option><option value="3">3 stars and up</option><option value="4">4 stars and up</option><option value="5">5 stars</option></select>
+            <span id="catchip"></span>
+      <span class="count" id="count" aria-live="polite"></span>
+    </div>
+    <table>
+      <thead><tr>
+        <th scope="col" data-k="title"><button>Title</button></th>
+        <th scope="col" data-k="category" class="hide-m"><button>Category</button></th>
+        <th scope="col" data-k="rating"><button>Rating</button></th>
+        <th scope="col" data-k="price_gbp" class="num" aria-sort="descending"><button>Price</button></th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="pager"><button id="prev">Previous</button><span id="page"></span><button id="next">Next</button></div>
+  </section>
+
+  <footer>Data collected by <code>scrape.py</code> (Python, requests, BeautifulSoup) from <a href="https://books.toscrape.com/">books.toscrape.com</a>, a public sandbox site made for scraping practice. Portfolio demo by Andrii Drymchenko. <a href="https://github.com/Zishwhwhw/portfolio-demos/tree/main/scraper">Source code</a> · <a href="../">More demos</a></footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const gbp=n=>"£"+n.toFixed(2);
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let ALL=[],st={q:"",minr:0,stock:"all",cat:null,sort:"price_gbp",dir:-1,page:0};const PER=20;
+
+fetch("data/books.json").then(r=>r.json()).then(({meta,books})=>{
+  ALL=books;
+  $("title").textContent=`${books.length.toLocaleString("en")} books, scraped and cleaned`;
+  $("meta").textContent=`Source: books.toscrape.com · collected ${meta.scraped_at} · ${new Set(books.map(b=>b.category)).size} categories`;
+  kpis();charts();table();
+}).catch(()=>{$("meta").textContent="Could not load data/books.json. Run scrape.py first."});
+
+function median(a){const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2}
+function kpis(){
+  const p=ALL.map(b=>b.price_gbp);
+  const items=[[gbp(median(p)),"median price"],[gbp(Math.min(...p))+"–"+gbp(Math.max(...p)),"price range"],
+    [ALL.filter(b=>b.rating===5).length.toLocaleString("en"),"five-star books"],[(ALL.reduce((a,b)=>a+b.rating,0)/ALL.length).toFixed(1)+" ★","average rating"]];
+  $("kpis").innerHTML=items.map(([v,l])=>`<div class="kpi"><b>${v}</b><span>${l}</span></div>`).join("");
+}
+function group(key){const g={};ALL.forEach(b=>{(g[b[key]]??=[]).push(b.price_gbp)});return Object.entries(g).map(([k,v])=>({k,n:v.length,avg:v.reduce((a,b)=>a+b,0)/v.length}))}
+function charts(){
+  // categories: horizontal bars
+  const cats=group("category").sort((a,b)=>b.n-a.n).slice(0,15).sort((a,b)=>b.avg-a.avg);
+  const W=640,rowH=26,L=170,H=cats.length*rowH+10,max=Math.max(...cats.map(c=>c.avg));
+  const svg=$("cat");svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  svg.innerHTML=cats.map((c,i)=>{const w=(W-L-110)*c.avg/max,y=i*rowH;
+    return `<g class="bar" data-cat="${esc(c.k)}" tabindex="0" role="button" aria-label="${esc(c.k)}, average ${gbp(c.avg)}, ${c.n} books">
+      <text class="lbl" x="${L-10}" y="${y+17}" text-anchor="end" font-size="13" fill="#14211B">${esc(c.k)}</text>
+      <rect x="${L}" y="${y+4}" width="${W-L}" height="${rowH-6}" fill="transparent"/>
+      <rect class="fill" x="${L}" y="${y+4}" width="${w}" height="${rowH-8}" rx="4"/>
+      <text x="${L+w+8}" y="${y+17}" font-size="12.5" fill="#5F6B64">${gbp(c.avg)} · ${c.n}</text></g>`}).join("");
+  svg.querySelectorAll(".bar").forEach(g=>{const go=()=>{st.cat=st.cat===g.dataset.cat?null:g.dataset.cat;st.page=0;table()};g.onclick=go;g.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}}});
+  // ratings: columns
+  const r=group("rating").sort((a,b)=>a.k-b.k),W2=360,H2=230,B=36,mx=Math.max(...r.map(x=>x.avg));
+  const s2=$("rat");s2.setAttribute("viewBox",`0 0 ${W2} ${H2}`);
+  const cw=(W2-20)/r.length;
+  s2.innerHTML=r.map((x,i)=>{const h=(H2-B-30)*x.avg/mx,xx=10+i*cw+cw*.18,w=cw*.64,y=H2-B-h;
+    return `<rect x="${xx}" y="${y}" width="${w}" height="${h}" rx="5" fill="${i===r.length-1?"#C98A1B":"#1F6F50"}"/>
+      <text x="${xx+w/2}" y="${y-8}" text-anchor="middle" font-size="13" font-weight="700" fill="#14211B">${gbp(x.avg)}</text>
+      <text x="${xx+w/2}" y="${H2-B+20}" text-anchor="middle" font-size="13" fill="#5F6B64">${x.k} ★</text>`}).join("")+
+    `<line x1="0" x2="${W2}" y1="${H2-B}" y2="${H2-B}" stroke="#D8DED9"/>`;
+}
+function filtered(){
+  const q=st.q.toLowerCase();
+  return ALL.filter(b=>(!q||b.title.toLowerCase().includes(q))&&b.rating>=st.minr&&(st.stock==="all"||b.in_stock)&&(!st.cat||b.category===st.cat))
+    .sort((a,b)=>{const x=a[st.sort],y=b[st.sort];return (typeof x==="string"?x.localeCompare(y):x-y)*st.dir});
+}
+function table(){
+  const rows=filtered(),pages=Math.max(1,Math.ceil(rows.length/PER));st.page=Math.min(st.page,pages-1);
+  $("rows").innerHTML=rows.slice(st.page*PER,(st.page+1)*PER).map(b=>`<tr><td><a href="${b.url}" rel="noopener">${esc(b.title)}</a>${b.in_stock?"":` <span class="out">sold out</span>`}</td>
+    <td class="hide-m">${esc(b.category)}</td><td><span class="stars" aria-label="${b.rating} of 5">${"★".repeat(b.rating)}${"☆".repeat(5-b.rating)}</span></td><td class="num">${gbp(b.price_gbp)}</td></tr>`).join("")
+    ||`<tr><td colspan="4">No books match these filters. Clear the search or pick another category.</td></tr>`;
+  $("count").textContent=`${rows.length.toLocaleString("en")} books`;
+  $("page").textContent=`Page ${st.page+1} of ${pages}`;$("prev").disabled=st.page===0;$("next").disabled=st.page>=pages-1;
+  $("catchip").innerHTML=st.cat?`<button class="chip" id="clearcat" aria-label="Remove category filter ${esc(st.cat)}">${esc(st.cat)} ✕</button>`:"";
+  if(st.cat)$("clearcat").onclick=()=>{st.cat=null;table()};
+  document.querySelectorAll("#cat .bar").forEach(g=>g.classList.toggle("on",g.dataset.cat===st.cat));
+  document.querySelectorAll("th[data-k]").forEach(th=>{if(th.dataset.k===st.sort)th.setAttribute("aria-sort",st.dir>0?"ascending":"descending");else th.removeAttribute("aria-sort")});
+}
+$("q").oninput=e=>{st.q=e.target.value;st.page=0;table()};
+$("minr").onchange=e=>{st.minr=+e.target.value;st.page=0;table()};
+$("prev").onclick=()=>{st.page--;table()};$("next").onclick=()=>{st.page++;table()};
+document.querySelectorAll("th[data-k] button").forEach(b=>b.onclick=()=>{const k=b.parentElement.dataset.k;st.dir=st.sort===k?-st.dir:(k==="title"||k==="category"?1:-1);st.sort=k;table()});
+</script>
+</body>
+</html>
