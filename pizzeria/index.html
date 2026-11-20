@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Brace — Neapolitan pizza in Kraków (demo)</title>
+<meta name="description" content="Demo website for a fictional Neapolitan pizzeria: menu with photos, cart, delivery or pickup checkout and live order tracking.">
+<meta name="theme-color" content="#16306B">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="img/hero.jpg">
+<style>
+:root{
+  --blue:#16306B;--blue-2:#24489A;--tile:#DCE6F7;--paper:#FBFAF7;--ink:#1A1F2E;--muted:#5A6175;
+  --tomato:#D2381F;--tomato-d:#B02A14;--basil:#2E6B3A;--crust:#E9C893;--line:#E4E1DA;
+  --r-s:10px;--r-m:16px;--ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{font-family:"Instrument Sans",system-ui,sans-serif;font-size:17px;line-height:1.55;color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--tomato);outline-offset:3px;border-radius:6px}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+h1,h2,h3{font-family:"Alfa Slab One",Georgia,serif;font-weight:400;letter-spacing:-.01em;line-height:1.05;color:var(--blue)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* tile band: the brand's one decorative device, taken from the majolica around the oven */
+.tiles{height:22px;background-color:var(--blue);background-image:
+  radial-gradient(circle at 11px 11px,var(--paper) 0 3px,transparent 3.5px),
+  conic-gradient(from 45deg at 11px 11px,var(--tile) 0 25%,transparent 0 50%,var(--tile) 0 75%,transparent 0);
+  background-size:22px 22px}
+
+/* header */
+.top{position:sticky;top:0;z-index:30;background:rgba(251,250,247,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:20px;height:68px}
+.logo{display:flex;align-items:baseline;gap:8px;text-decoration:none}
+.logo b{font-family:"Alfa Slab One",serif;font-weight:400;font-size:28px;color:var(--tomato);letter-spacing:.01em}
+.logo span{font-size:13px;color:var(--muted)}
+.nav{display:flex;gap:22px;margin-left:auto;font-weight:500}
+.nav a{text-decoration:none;padding:8px 0;border-bottom:2px solid transparent;transition:border-color .2s}
+.nav a:hover{border-color:var(--tomato)}
+.lang{display:flex;border:1px solid var(--line);border-radius:999px;padding:3px;font-size:14px;font-weight:600}
+.lang button{padding:5px 10px;border-radius:999px;min-width:40px;min-height:32px}
+.lang button[aria-pressed=true]{background:var(--blue);color:#fff}
+.cartbtn{display:flex;align-items:center;gap:8px;background:var(--tomato);color:#fff;font-weight:600;padding:10px 16px;border-radius:999px;min-height:44px;transition:background .2s,transform .2s var(--ease)}
+.cartbtn:hover{background:var(--tomato-d)}
+.cartbtn .n{background:#fff;color:var(--tomato);border-radius:999px;min-width:24px;height:24px;display:grid;place-items:center;font-size:13px;font-weight:700;padding:0 6px}
+.cartbtn.bump{animation:bump .45s var(--ease)}
+@keyframes bump{40%{transform:scale(1.12)}}
+
+/* hero */
+.hero{position:relative;min-height:min(86vh,760px);display:grid;align-items:end;color:#fff;overflow:hidden;background:#0d1530}
+.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 60%;transform:scale(1.06);animation:settle 2.4s var(--ease) forwards}
+@keyframes settle{to{transform:scale(1)}}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,21,48,.15) 0%,rgba(13,21,48,.25) 40%,rgba(13,21,48,.88) 100%)}
+.hero .wrap{position:relative;z-index:1;padding-bottom:64px;width:100%}
+.status{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);padding:6px 12px;border-radius:999px;font-size:14px;font-weight:600;backdrop-filter:blur(6px)}
+.status i{width:8px;height:8px;border-radius:50%;background:#7BE08F;box-shadow:0 0 0 0 rgba(123,224,143,.7);animation:ping 2s infinite}
+.status.closed i{background:#F2B33D;animation:none}
+@keyframes ping{70%{box-shadow:0 0 0 8px rgba(123,224,143,0)}100%{box-shadow:0 0 0 0 rgba(123,224,143,0)}}
+.hero h1{color:#fff;font-size:clamp(44px,7.4vw,96px);max-width:11ch;margin:18px 0 18px}
+.hero p{font-size:clamp(18px,2vw,21px);max-width:46ch;color:rgba(255,255,255,.9)}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 24px;border-radius:999px;font-weight:600;text-decoration:none;transition:background .2s,color .2s,transform .2s var(--ease)}
+.btn:active{transform:scale(.97)}
+.btn.red{background:var(--tomato);color:#fff}.btn.red:hover{background:var(--tomato-d)}
+.btn.ghost{border:1.5px solid rgba(255,255,255,.7);color:#fff}.btn.ghost:hover{background:#fff;color:var(--blue)}
+.facts{display:flex;gap:28px;flex-wrap:wrap;margin-top:40px;font-size:15px;color:rgba(255,255,255,.85)}
+.facts b{display:block;font-family:"Alfa Slab One",serif;font-weight:400;font-size:28px;color:var(--crust)}
+
+/* menu */
+section{padding:88px 0}
+.head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;margin-bottom:28px}
+.head h2{font-size:clamp(34px,4.6vw,54px)}
+.head p{color:var(--muted);max-width:44ch}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+.tab{min-height:44px;padding:0 18px;border-radius:999px;border:1.5px solid var(--blue);color:var(--blue);font-weight:600;transition:background .2s,color .2s}
+.tab[aria-selected=true]{background:var(--blue);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:22px}
+@media (min-width:1000px){.grid{grid-template-columns:repeat(3,1fr)}.card .ph{aspect-ratio:4/3}}
+.card{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:var(--r-m);overflow:hidden;transition:transform .3s var(--ease),box-shadow .3s}
+.card:hover{transform:translateY(-3px);box-shadow:0 14px 30px -18px rgba(22,48,107,.45)}
+.card .ph{aspect-ratio:1;overflow:hidden;background:var(--tile)}
+.card .ph img{width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease)}
+.card:hover .ph img{transform:scale(1.05)}
+.card .bd{padding:16px 18px 18px;display:flex;flex-direction:column;gap:6px;flex:1}
+.card h3{font-size:22px}
+.card .ing{color:var(--muted);font-size:15px;flex:1}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:#EAF3EC;color:var(--basil)}
+.tag.hot{background:#FBE7E3;color:var(--tomato-d)}
+.row{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.price{font-weight:700;font-size:19px}
+.add{min-height:44px;padding:0 16px;border-radius:999px;background:var(--blue);color:#fff;font-weight:600;display:flex;align-items:center;gap:6px;transition:background .2s}
+.add:hover{background:var(--blue-2)}
+.add.done{background:var(--basil)}
+.drinks{margin-top:22px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.drink{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:var(--r-s);padding:12px 12px 12px 18px}
+.drink small{display:block;color:var(--muted)}
+
+/* bake */
+.bake{background:var(--blue);color:#fff;overflow:hidden}
+.bake .wrap{display:grid;grid-template-columns:1.1fr 1fr;gap:56px;align-items:center}
+.bake h2{color:#fff;font-size:clamp(34px,4.6vw,54px);margin-bottom:18px}
+.bake p{color:rgba(255,255,255,.85);max-width:48ch}
+.bake ul{list-style:none;margin-top:28px;display:grid;gap:18px}
+.bake li{display:grid;grid-template-columns:76px 1fr;gap:16px;align-items:start;padding-top:18px;border-top:1px solid rgba(255,255,255,.2)}
+.bake li b{font-family:"Alfa Slab One",serif;font-weight:400;font-size:30px;color:var(--crust);line-height:1}
+.bake figure{position:relative;border-radius:var(--r-m);overflow:hidden;aspect-ratio:4/5}
+.bake figure img{width:100%;height:100%;object-fit:cover}
+
+/* info */
+.info .wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.box{background:#fff;border:1px solid var(--line);border-radius:var(--r-m);padding:24px}
+.box h3{font-size:24px;margin-bottom:12px}
+.box table{width:100%;border-collapse:collapse;font-size:16px}
+.box td{padding:6px 0;border-bottom:1px dashed var(--line)}
+.box td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.box tr.today td{font-weight:700;color:var(--blue)}
+.box p{color:var(--muted)}
+.box p+p{margin-top:8px}
+
+footer{padding:40px 0 56px;color:var(--muted);font-size:15px}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(13,21,48,.45);opacity:0;pointer-events:none;transition:opacity .3s;z-index:40}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,100%);background:var(--paper);z-index:41;transform:translateX(102%);transition:transform .38s var(--ease);display:flex;flex-direction:column;box-shadow:-20px 0 40px -20px rgba(0,0,0,.3)}
+.drawer.on{transform:none}
+.dh{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line)}
+.dh h2{font-size:28px}
+.x{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line)}
+.db{flex:1;overflow:auto;padding:18px 20px;overscroll-behavior:contain}
+.df{padding:16px 20px calc(16px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:#fff}
+.line{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.line img{width:56px;height:56px;border-radius:10px;object-fit:cover}
+.line .nm{font-weight:600}
+.line .pr{color:var(--muted);font-size:14px}
+.qty{display:flex;align-items:center;border:1px solid var(--line);border-radius:999px}
+.qty button{width:36px;height:36px;display:grid;place-items:center;font-size:20px;font-weight:600;color:var(--blue)}
+.qty span{min-width:20px;text-align:center;font-weight:600;font-variant-numeric:tabular-nums}
+.empty{text-align:center;padding:48px 10px;color:var(--muted)}
+.empty b{display:block;font-family:"Alfa Slab One",serif;font-weight:400;font-size:24px;color:var(--blue);margin-bottom:6px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:#EFEDE7;border-radius:12px;padding:4px;margin:18px 0 14px}
+.seg button{min-height:42px;border-radius:9px;font-weight:600;transition:background .2s}
+.seg button[aria-pressed=true]{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.12);color:var(--blue)}
+.f{display:grid;gap:5px;margin-bottom:12px}
+.f label{font-size:14px;font-weight:600}
+.f input,.f select,.f textarea{min-height:46px;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;font-size:16px}
+.f textarea{min-height:70px;resize:vertical}
+.f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--blue)}
+.f .err{color:var(--tomato-d);font-size:14px;display:none}
+.f.bad input,.f.bad select{border-color:var(--tomato)}
+.f.bad .err{display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sum{display:grid;gap:4px;font-size:15px;margin-bottom:12px}
+.sum div{display:flex;justify-content:space-between}
+.sum .tot{font-weight:700;font-size:19px;color:var(--ink);margin-top:4px}
+.hint{font-size:14px;color:var(--basil);margin-bottom:10px}
+.hint.warn{color:var(--tomato-d)}
+.go{width:100%;min-height:52px;border-radius:999px;background:var(--tomato);color:#fff;font-weight:700;font-size:17px;transition:background .2s}
+.go:hover{background:var(--tomato-d)}
+.go:disabled{background:#C9C5BC;cursor:not-allowed}
+
+/* tracking */
+.track{text-align:center;padding-top:8px}
+.ring{width:180px;height:180px;margin:6px auto 14px;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:10}
+.ring .bg{stroke:#EFEDE7}
+.ring .fg{stroke:var(--tomato);stroke-linecap:round;stroke-dasharray:502;stroke-dashoffset:502;transition:stroke-dashoffset .9s linear}
+.ring .t{position:absolute;inset:0;display:grid;place-items:center;align-content:center}
+.ring .t b{font-family:"Alfa Slab One",serif;font-weight:400;font-size:40px;color:var(--blue);line-height:1}
+.ring .t small{color:var(--muted);font-size:13px}
+.steps{list-style:none;text-align:left;margin:8px 0 18px;display:grid;gap:2px}
+.steps li{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:9px 0;color:#A09C93;transition:color .3s}
+.steps li i{width:22px;height:22px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center}
+.steps li.on{color:var(--ink)}
+.steps li.on i{background:var(--basil);border-color:var(--basil)}
+.steps li.on i::after{content:"";width:9px;height:5px;border:2px solid #fff;border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.steps li.now{color:var(--blue);font-weight:600}
+.steps li.now i{border-color:var(--tomato);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 5px rgba(210,56,31,.18)}}
+.steps small{font-variant-numeric:tabular-nums;color:var(--muted)}
+.tg{text-align:left;background:#E6EBF2;border-radius:16px;padding:14px}
+.tg .who{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-bottom:8px}
+.tg .who b{width:26px;height:26px;border-radius:50%;background:#2A9FD8;color:#fff;display:grid;place-items:center;font-size:12px}
+.bubble{background:#fff;border-radius:4px 14px 14px 14px;padding:10px 12px;font-size:14.5px;line-height:1.45;white-space:pre-line;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+.demo-note{font-size:13px;color:var(--muted);margin-top:10px}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,200%);visibility:hidden;background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;z-index:50;transition:transform .35s var(--ease)}
+.toast.on{transform:translate(-50%,0);visibility:visible}
+
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+
+@media (max-width:900px){
+  .nav{display:none}
+  .bake .wrap,.info .wrap{grid-template-columns:1fr}
+  .bake figure{aspect-ratio:16/10}
+  section{padding:64px 0}
+}
+@media (max-width:520px){
+  .logo span{display:none}
+  .top .wrap{gap:10px}
+  .lang{margin-left:auto}
+  .cartbtn .lbl{display:none}
+  .two{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .reveal{opacity:1;transform:none}
+  .hero img{transform:none}
+}
+</style>
+</head>
+<body>
+<a class="sr" href="#menu">Skip to menu</a>
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#" aria-label="Brace, home"><b>Brace</b><span data-t="tagline">pizza napoletana · Kraków</span></a>
+    <nav class="nav" aria-label="Main">
+      <a href="#menu" data-t="nav_menu">Menu</a>
+      <a href="#bake" data-t="nav_bake">How we bake</a>
+      <a href="#info" data-t="nav_info">Hours & delivery</a>
+    </nav>
+    <div class="lang" role="group" aria-label="Language">
+      <button data-lang="en" aria-pressed="true">EN</button>
+      <button data-lang="pl" aria-pressed="false">PL</button>
+    </div>
+    <button class="cartbtn" id="openCart" aria-haspopup="dialog">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 7h18l-2 13H5L3 7Z"/><path d="M8 7a4 4 0 0 1 8 0"/></svg>
+      <span class="lbl" data-t="cart">Order</span><span class="n" id="cartN">0</span>
+    </button>
+  </div>
+</header>
+<div class="tiles" aria-hidden="true"></div>
+
+<main>
+<section class="hero" aria-labelledby="h1" style="padding:0">
+  <img src="img/hero.jpg" alt="Wood fire burning inside a tiled pizza oven" width="2000" height="1200">
+  <div class="wrap">
+    <span class="status" id="status"><i></i><span></span></span>
+    <h1 id="h1" data-t="h1">Ninety seconds at 485 degrees</h1>
+    <p data-t="lead">Dough rested for 48 hours, San Marzano tomatoes and a beech-wood fire. Order for delivery around Kazimierz or pick it up hot from the oven.</p>
+    <div class="cta">
+      <a class="btn red" href="#menu" data-t="cta_order">Choose your pizza</a>
+      <a class="btn ghost" href="#info" data-t="cta_info">Delivery zones</a>
+    </div>
+    <div class="facts">
+      <div><b>48 h</b><span data-t="f1">dough fermentation</span></div>
+      <div><b>32 cm</b><span data-t="f2">every pizza, one size</span></div>
+      <div><b>~35 min</b><span data-t="f3">to your door</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="menu" aria-labelledby="menuH">
+  <div class="wrap">
+    <div class="head reveal">
+      <h2 id="menuH" data-t="menu_h">Menu</h2>
+      <p data-t="menu_p">Pizzas are baked to order, one at a time. Gluten-free dough is not available: we use one flour for everything.</p>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Menu categories" id="tabs"></div>
+    <div class="grid" id="grid" role="tabpanel"></div>
+    <div class="drinks" id="drinks"></div>
+  </div>
+</section>
+
+<section class="bake" id="bake" aria-labelledby="bakeH">
+  <div class="wrap">
+    <div class="reveal">
+      <h2 id="bakeH" data-t="bake_h">How a Brace pizza is made</h2>
+      <p data-t="bake_p">Nothing here is complicated. It just takes time, and we do not skip any of it.</p>
+      <ul>
+        <li><b>48h</b><div><strong data-t="b1h">The dough rests for two days</strong><br><span data-t="b1">Italian type 00 flour, water, salt and very little yeast. Slow fermentation makes the crust light and easy to digest.</span></div></li>
+        <li><b>485°</b><div><strong data-t="b2h">The oven burns beech wood</strong><br><span data-t="b2">The floor reaches 485 °C. The crust puffs up and chars in spots, and the middle stays soft.</span></div></li>
+        <li><b>90s</b><div><strong data-t="b3h">Each pizza bakes for 90 seconds</strong><br><span data-t="b3">The pizzaiolo turns it three times. Then it goes straight into a vented box so it does not steam on the way.</span></div></li>
+      </ul>
+    </div>
+    <figure class="reveal"><img src="img/oven.jpg" alt="Pizza baking on the floor of a wood-fired oven" loading="lazy" width="1300" height="589"></figure>
+  </div>
+</section>
+
+<section class="info" id="info" aria-labelledby="infoH">
+  <h2 id="infoH" class="sr" data-t="nav_info">Hours & delivery</h2>
+  <div class="wrap">
+    <div class="box reveal">
+      <h3 data-t="hours">Opening hours</h3>
+      <table id="hours"></table>
+    </div>
+    <div class="box reveal">
+      <h3 data-t="deliv">Delivery</h3>
+      <p data-t="deliv1">Kazimierz, Stare Miasto, Podgórze and Grzegórzki. Usually 30–40 minutes.</p>
+      <p data-t="deliv2">Delivery costs 9 zł and is free for orders over 90 zł. Minimum order is 40 zł.</p>
+    </div>
+    <div class="box reveal">
+      <h3 data-t="find">Find us</h3>
+      <p>ul. Józefa 12, 31-056 Kraków</p>
+      <p>+48 12 000 00 00</p>
+      <p data-t="find2">Twelve tables inside, four in the courtyard from May to September.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span data-t="foot">Brace is a fictional pizzeria. This is a portfolio demo by Andrii Drymchenko; no real orders are taken.</span>
+    <span><a href="../credits.html" data-t="credits">Photo credits</a> · <a href="../" data-t="more">More demos</a></span>
+  </div>
+</footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dTitle" tabindex="-1">
+  <div class="dh"><h2 id="dTitle" data-t="your_order">Your order</h2>
+    <button class="x" id="closeCart" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="db" id="db"></div>
+  <div class="df" id="df"></div>
+</aside>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const MENU = [
+  {id:"margherita",cat:"rosse",img:"margherita",price:36,veg:1,
+   en:["Margherita","San Marzano tomato, fior di latte, basil, olive oil"],pl:["Margherita","Pomidory San Marzano, fior di latte, bazylia, oliwa"]},
+  {id:"bufala",cat:"rosse",img:"bufala",price:44,veg:1,
+   en:["Bufala","San Marzano tomato, buffalo mozzarella from Campania, basil"],pl:["Bufala","Pomidory San Marzano, mozzarella z mleka bawolego, bazylia"]},
+  {id:"pepperoni",cat:"rosse",img:"diavola",price:40,
+   en:["Pepperoni","Tomato, fior di latte, pepperoni, oregano"],pl:["Pepperoni","Pomidory, fior di latte, pepperoni, oregano"]},
+  {id:"diavola",cat:"rosse",img:"salame",price:43,hot:1,
+   en:["Diavola","Tomato, spicy Calabrian salami, basil, chilli honey"],pl:["Diavola","Pomidory, pikantne salami z Kalabrii, bazylia, miód z chili"]},
+  {id:"capricciosa",cat:"rosse",img:"capricciosa",price:45,
+   en:["Capricciosa","Tomato, fior di latte, cooked ham, mushrooms, artichokes, black olives"],pl:["Capricciosa","Pomidory, fior di latte, szynka, pieczarki, karczochy, czarne oliwki"]},
+  {id:"ortolana",cat:"rosse",img:"ortolana",price:39,veg:1,
+   en:["Ortolana","Tomato, fior di latte, peppers, cherry tomatoes, red onion, sweetcorn"],pl:["Ortolana","Pomidory, fior di latte, papryka, pomidorki, czerwona cebula, kukurydza"]},
+  {id:"funghi",cat:"bianche",img:"funghi",price:44,
+   en:["Prosciutto e funghi","Fior di latte, cooked ham, champignons, parmesan, black pepper"],pl:["Prosciutto e funghi","Fior di latte, szynka, pieczarki, parmezan, czarny pieprz"]},
+  {id:"friarielli",cat:"bianche",img:"bianca",price:46,
+   en:["Friarielli e salsiccia","Smoked provola, broccoli rabe, fennel sausage, garlic"],pl:["Friarielli e salsiccia","Wędzona provola, friarielli, kiełbasa z koprem, czosnek"]},
+  {id:"tiramisu",cat:"dolci",img:"tiramisu",price:19,veg:1,
+   en:["Tiramisu","Mascarpone, savoiardi soaked in espresso, cocoa. Made every morning"],pl:["Tiramisu","Mascarpone, biszkopty nasączone espresso, kakao. Robimy codziennie rano"]},
+];
+const DRINKS = [
+  {id:"lemonade",price:14,en:["Lemonade","Sorrento lemons, 0.4 l"],pl:["Lemoniada","Cytryny z Sorrento, 0,4 l"]},
+  {id:"chinotto",price:12,en:["Chinotto","Bitter citrus soda, 0.275 l"],pl:["Chinotto","Gorzki napój cytrusowy, 0,275 l"]},
+  {id:"water",price:9,en:["Sparkling water","San Pellegrino, 0.5 l"],pl:["Woda gazowana","San Pellegrino, 0,5 l"]},
+];
+const CATS = {rosse:{en:"Red pizzas",pl:"Pizze rosse"},bianche:{en:"White pizzas",pl:"Pizze bianche"},dolci:{en:"Dessert & drinks",pl:"Desery i napoje"}};
+const HOURS = [[1,12,22],[2,12,22],[3,12,22],[4,12,22],[5,12,23],[6,12,23],[0,13,21]]; // weekday, open, close
+const T = {
+ en:{tagline:"pizza napoletana · Kraków",nav_menu:"Menu",nav_bake:"How we bake",nav_info:"Hours & delivery",cart:"Order",
+  h1:"Ninety seconds at 485 degrees",lead:"Dough rested for 48 hours, San Marzano tomatoes and a beech-wood fire. Order for delivery around Kazimierz or pick it up hot from the oven.",
+  cta_order:"Choose your pizza",cta_info:"Delivery zones",f1:"dough fermentation",f2:"every pizza, one size",f3:"to your door",
+  menu_h:"Menu",menu_p:"Pizzas are baked to order, one at a time. Gluten-free dough is not available: we use one flour for everything.",
+  bake_h:"How a Brace pizza is made",bake_p:"Nothing here is complicated. It just takes time, and we do not skip any of it.",
+  b1h:"The dough rests for two days",b1:"Italian type 00 flour, water, salt and very little yeast. Slow fermentation makes the crust light and easy to digest.",
+  b2h:"The oven burns beech wood",b2:"The floor reaches 485 °C. The crust puffs up and chars in spots, and the middle stays soft.",
+  b3h:"Each pizza bakes for 90 seconds",b3:"The pizzaiolo turns it three times. Then it goes straight into a vented box so it does not steam on the way.",
+  hours:"Opening hours",deliv:"Delivery",deliv1:"Kazimierz, Stare Miasto, Podgórze and Grzegórzki. Usually 30–40 minutes.",deliv2:"Delivery costs 9 zł and is free for orders over 90 zł. Minimum order is 40 zł.",
+  find:"Find us",find2:"Twelve tables inside, four in the courtyard from May to September.",
+  foot:"Brace is a fictional pizzeria. This is a portfolio demo by Andrii Drymchenko; no real orders are taken.",credits:"Photo credits",more:"More demos",
+  your_order:"Your order",add:"Add",added:"Added",veg:"Vegetarian",hot:"Spicy",
+  open_now:"Open now · until {t}",closed:"Closed · opens {d} at {t}",today:"today",tomorrow:"tomorrow",
+  days:["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+  empty_h:"Nothing here yet",empty_p:"Add a pizza from the menu and it will show up here.",
+  delivery:"Delivery",pickup:"Pickup",name:"Name",phone:"Phone",street:"Street and number",flat:"Flat, floor, door code",when:"When",asap:"As soon as possible",
+  pay:"Payment",card_door:"Card to the courier",cash:"Cash",online:"BLIK or card online",note:"Note for the kitchen",note_ph:"No onion, ring twice…",
+  subtotal:"Pizzas and drinks",fee:"Delivery",free:"free",total:"Total",
+  free_hint:"Add {x} more for free delivery.",free_ok:"Delivery is free for this order.",min_hint:"Minimum for delivery is 40 zł. Add {x} more or choose pickup.",
+  place:"Place order · {x}",err_name:"Enter your name.",err_phone:"Enter a 9-digit Polish number.",err_street:"Enter the street and number.",
+  err_zone:"We deliver only to Kazimierz, Stare Miasto, Podgórze and Grzegórzki.",zone:"District",pick_zone:"Choose district",
+  track_h:"Order #{n} accepted",s1:"Accepted",s2:"In the oven",s3:"In the box",s4d:"On the way",s4p:"Ready at the counter",
+  sec:"seconds left",done:"done",kitchen:"The kitchen gets this in Telegram:",demo:"Demo speed: the real oven takes 90 seconds, the courier about 30 minutes.",
+  new_order:"Start a new order",toast_add:"{x} added",pick_at:"Pickup from ul. Józefa 12"},
+ pl:{tagline:"pizza napoletana · Kraków",nav_menu:"Menu",nav_bake:"Jak pieczemy",nav_info:"Godziny i dostawa",cart:"Zamów",
+  h1:"Dziewięćdziesiąt sekund w 485 stopniach",lead:"Ciasto dojrzewa 48 godzin, pomidory San Marzano, ogień z drewna bukowego. Zamów z dostawą po Kazimierzu albo odbierz prosto z pieca.",
+  cta_order:"Wybierz pizzę",cta_info:"Strefy dostawy",f1:"fermentacji ciasta",f2:"każda pizza, jeden rozmiar",f3:"do Twoich drzwi",
+  menu_h:"Menu",menu_p:"Każdą pizzę pieczemy na zamówienie, jedną po drugiej. Nie mamy ciasta bezglutenowego: używamy jednej mąki do wszystkiego.",
+  bake_h:"Jak powstaje pizza w Brace",bake_p:"Nic tu nie jest skomplikowane. To po prostu wymaga czasu i niczego nie skracamy.",
+  b1h:"Ciasto odpoczywa dwa dni",b1:"Włoska mąka typu 00, woda, sól i bardzo mało drożdży. Powolna fermentacja sprawia, że ciasto jest lekkie i lekkostrawne.",
+  b2h:"Piec opalamy drewnem bukowym",b2:"Spód pieca ma 485 °C. Brzegi rosną i miejscami się przypalają, a środek zostaje miękki.",
+  b3h:"Każda pizza piecze się 90 sekund",b3:"Pizzaiolo obraca ją trzy razy. Potem od razu trafia do pudełka z otworami, żeby nie zaparowała po drodze.",
+  hours:"Godziny otwarcia",deliv:"Dostawa",deliv1:"Kazimierz, Stare Miasto, Podgórze i Grzegórzki. Zwykle 30–40 minut.",deliv2:"Dostawa kosztuje 9 zł, a od 90 zł jest za darmo. Minimalne zamówienie to 40 zł.",
+  find:"Gdzie jesteśmy",find2:"Dwanaście stolików w środku, cztery na podwórku od maja do września.",
+  foot:"Brace to fikcyjna pizzeria. To demo do portfolio Andrii Drymchenko; zamówienia nie są realizowane.",credits:"Autorzy zdjęć",more:"Inne projekty",
+  your_order:"Twoje zamówienie",add:"Dodaj",added:"Dodano",veg:"Wegetariańska",hot:"Ostra",
+  open_now:"Otwarte · do {t}",closed:"Zamknięte · otwieramy {d} o {t}",today:"dziś",tomorrow:"jutro",
+  days:["niedziela","poniedziałek","wtorek","środa","czwartek","piątek","sobota"],
+  empty_h:"Na razie pusto",empty_p:"Dodaj pizzę z menu, a pojawi się tutaj.",
+  delivery:"Dostawa",pickup:"Odbiór",name:"Imię",phone:"Telefon",street:"Ulica i numer",flat:"Mieszkanie, piętro, kod do bramy",when:"Kiedy",asap:"Jak najszybciej",
+  pay:"Płatność",card_door:"Kartą u kuriera",cash:"Gotówką",online:"BLIK lub karta online",note:"Uwagi dla kuchni",note_ph:"Bez cebuli, dzwonić dwa razy…",
+  subtotal:"Pizza i napoje",fee:"Dostawa",free:"gratis",total:"Razem",
+  free_hint:"Dodaj jeszcze {x}, a dostawa będzie gratis.",free_ok:"Dostawa tego zamówienia jest gratis.",min_hint:"Minimum przy dostawie to 40 zł. Dodaj jeszcze {x} albo wybierz odbiór.",
+  place:"Zamawiam · {x}",err_name:"Wpisz imię.",err_phone:"Wpisz 9-cyfrowy numer.",err_street:"Wpisz ulicę i numer.",
+  err_zone:"Dowozimy tylko na Kazimierz, Stare Miasto, Podgórze i Grzegórzki.",zone:"Dzielnica",pick_zone:"Wybierz dzielnicę",
+  track_h:"Zamówienie #{n} przyjęte",s1:"Przyjęte",s2:"W piecu",s3:"W pudełku",s4d:"W drodze",s4p:"Gotowe do odbioru",
+  sec:"sekund",done:"gotowe",kitchen:"Kuchnia dostaje to na Telegramie:",demo:"Tempo demo: prawdziwy piec to 90 sekund, kurier około 30 minut.",
+  new_order:"Nowe zamówienie",toast_add:"Dodano: {x}",pick_at:"Odbiór: ul. Józefa 12"}
+};
+const ZONES = ["Kazimierz","Stare Miasto","Podgórze","Grzegórzki"];
+let lang = localStorage.getItem("brace_lang") || ((navigator.language||"").startsWith("pl") ? "pl" : "en");
+let cat = "rosse";
+const cart = new Map(JSON.parse(localStorage.getItem("brace_cart") || "[]"));
+const form = {mode:"delivery",name:"",phone:"",street:"",flat:"",zone:"",when:"asap",pay:"card",note:""};
+let view = "cart", tried = false, timers = [];
+
+const $ = s => document.querySelector(s);
+const t = (k, v={}) => { const s = T[lang][k] ?? T.en[k] ?? k; return typeof s === "string" ? s.replace(/\{(\w+)\}/g, (_, x) => v[x]) : s; };
+const zl = n => lang === "pl" ? `${n} zł` : `${n} zł`;
+const item = id => MENU.find(m => m.id === id) || DRINKS.find(d => d.id === id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const save = () => localStorage.setItem("brace_cart", JSON.stringify([...cart]));
+
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-t]").forEach(el => el.textContent = t(el.dataset.t));
+  document.querySelectorAll("[data-lang]").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === lang));
+  renderTabs(); renderMenu(); renderHours(); renderStatus(); renderDrawer();
+}
+
+function renderTabs(){
+  $("#tabs").innerHTML = Object.entries(CATS).map(([k,v]) =>
+    `<button class="tab" role="tab" aria-selected="${k===cat}" data-cat="${k}">${v[lang]}</button>`).join("");
+}
+function card(m){
+  const [n, ing] = m[lang], q = cart.get(m.id) || 0;
+  const tags = [m.veg && `<span class="tag">${t("veg")}</span>`, m.hot && `<span class="tag hot">${t("hot")}</span>`].filter(Boolean).join("");
+  return `<article class="card">
+    <div class="ph"><img src="img/${m.img}.jpg" alt="${esc(n)}" loading="lazy" width="900" height="900"></div>
+    <div class="bd"><h3>${esc(n)}</h3>${tags ? `<div class="tags">${tags}</div>` : ""}<p class="ing">${esc(ing)}</p>
+    <div class="row"><span class="price">${zl(m.price)}</span>
+    <button class="add${q ? " done" : ""}" data-add="${m.id}" aria-label="${t("add")} ${esc(n)}">${q ? `${t("added")} · ${q}` : `+ ${t("add")}`}</button></div></div></article>`;
+}
+function renderMenu(){
+  $("#grid").innerHTML = MENU.filter(m => m.cat === cat).map(card).join("");
+  $("#drinks").innerHTML = cat !== "dolci" ? "" : DRINKS.map(d => {
+    const [n, s] = d[lang], q = cart.get(d.id) || 0;
+    return `<div class="drink"><div><strong>${esc(n)}</strong><small>${esc(s)} · ${zl(d.price)}</small></div>
+      <button class="add${q ? " done" : ""}" data-add="${d.id}" aria-label="${t("add")} ${esc(n)}">${q ? `${t("added")} · ${q}` : `+ ${t("add")}`}</button></div>`;
+  }).join("");
+}
+function warsawNow(){
+  const p = Object.fromEntries(new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Warsaw",weekday:"short",hour:"numeric",minute:"numeric",hourCycle:"h23"})
+    .formatToParts(new Date()).map(x => [x.type, x.value]));
+  return {day:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(p.weekday), h:+p.hour + p.minute/60};
+}
+function renderHours(){
+  const {day} = warsawNow();
+  $("#hours").innerHTML = HOURS.map(([d,o,c]) =>
+    `<tr class="${d===day?"today":""}"><td>${t("days")[d][0].toUpperCase()+t("days")[d].slice(1)}</td><td>${o}:00–${c}:00</td></tr>`).join("");
+}
+function renderStatus(){
+  const {day, h} = warsawNow(), el = $("#status"), today = HOURS.find(x => x[0] === day);
+  if (h >= today[1] && h < today[2]) {
+    el.classList.remove("closed"); el.lastElementChild.textContent = t("open_now", {t:`${today[2]}:00`});
+  } else {
+    let d = h < today[1] ? day : (day + 1) % 7;
+    const next = HOURS.find(x => x[0] === d);
+    el.classList.add("closed");
+    el.lastElementChild.textContent = t("closed", {d: d === day ? t("today") : t("tomorrow"), t:`${next[1]}:00`});
+  }
+}
+
+/* cart */
+const subtotal = () => [...cart].reduce((s,[id,q]) => s + item(id).price * q, 0);
+const fee = () => form.mode === "pickup" || subtotal() >= 90 ? 0 : 9;
+const count = () => [...cart.values()].reduce((a,b) => a + b, 0);
+function setQty(id, q){
+  if (q <= 0) cart.delete(id); else cart.set(id, q);
+  save(); $("#cartN").textContent = count(); renderMenu(); if (view === "cart") renderDrawer();
+}
+function toast(msg){
+  const el = $("#toast"); el.textContent = msg; el.classList.add("on");
+  clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 1800);
+}
+function slots(){
+  const {h} = warsawNow(), out = [];
+  let start = Math.ceil((h + 0.75) * 4) / 4;
+  for (let x = start; x < 22.5 && out.length < 12; x += 0.25)
+    out.push(`${Math.floor(x)}:${String(Math.round((x % 1) * 60)).padStart(2,"0")}`);
+  return out;
+}
+function errors(){
+  const e = {};
+  if (!form.name.trim()) e.name = t("err_name");
+  if (!/^(\+?48)?\s?\d{3}\s?\d{3}\s?\d{3}$/.test(form.phone.trim())) e.phone = t("err_phone");
+  if (form.mode === "delivery") {
+    if (form.street.trim().length < 4) e.street = t("err_street");
+    if (!ZONES.includes(form.zone)) e.zone = t("err_zone");
+  }
+  return e;
+}
+function field(k, label, html, err){
+  return `<div class="f${tried && err ? " bad" : ""}" data-f="${k}"><label for="f_${k}">${label}</label>${html}<span class="err" id="e_${k}">${err || ""}</span></div>`;
+}
+function renderDrawer(){
+  const db = $("#db"), df = $("#df");
+  if (view === "track") return;
+  if (!cart.size) {
+    db.innerHTML = `<div class="empty"><b>${t("empty_h")}</b>${t("empty_p")}</div>`;
+    df.innerHTML = `<button class="go" data-close>${t("cta_order")}</button>`; return;
+  }
+  const e = errors(), inp = (k, type="text", extra="") =>
+    `<input id="f_${k}" name="${k}" type="${type}" value="${esc(form[k])}" ${extra} aria-describedby="e_${k}"${tried && e[k] ? ' aria-invalid="true"' : ""}>`;
+  const lines = [...cart].map(([id,q]) => { const m = item(id), [n] = m[lang];
+    return `<div class="line">${m.img ? `<img src="img/${m.img}.jpg" alt="">` : `<span></span>`}<div><div class="nm">${esc(n)}</div><div class="pr">${zl(m.price)}</div></div>
+      <div class="qty"><button data-dec="${id}" aria-label="−1 ${esc(n)}">−</button><span aria-live="polite">${q}</span><button data-inc="${id}" aria-label="+1 ${esc(n)}">+</button></div></div>`; }).join("");
+  let html = lines + `<div class="seg" role="group" aria-label="${t("delivery")} / ${t("pickup")}">
+      <button data-mode="delivery" aria-pressed="${form.mode==="delivery"}">${t("delivery")}</button>
+      <button data-mode="pickup" aria-pressed="${form.mode==="pickup"}">${t("pickup")}</button></div>`;
+  html += `<div class="two">${field("name", t("name"), inp("name","text",'autocomplete="given-name"'), e.name)}${field("phone", t("phone"), inp("phone","tel",'autocomplete="tel" inputmode="tel" placeholder="512 345 678"'), e.phone)}</div>`;
+  if (form.mode === "delivery") {
+    html += field("zone", t("zone"), `<select id="f_zone" name="zone" aria-describedby="e_zone"><option value="">${t("pick_zone")}</option>${ZONES.map(z => `<option${z===form.zone?" selected":""}>${z}</option>`).join("")}</select>`, e.zone);
+    html += `<div class="two">${field("street", t("street"), inp("street","text",'autocomplete="address-line1"'), e.street)}${field("flat", t("flat"), inp("flat"), "")}</div>`;
+  } else html += `<p class="hint">${t("pick_at")}</p>`;
+  html += `<div class="two">${field("when", t("when"), `<select id="f_when" name="when"><option value="asap">${t("asap")}</option>${slots().map(s => `<option${s===form.when?" selected":""}>${s}</option>`).join("")}</select>`)}
+    ${field("pay", t("pay"), `<select id="f_pay" name="pay">${[["card",t("card_door")],["cash",t("cash")],["online",t("online")]].map(([v,l]) => `<option value="${v}"${v===form.pay?" selected":""}>${l}</option>`).join("")}</select>`)}</div>`;
+  html += field("note", t("note"), `<textarea id="f_note" name="note" placeholder="${t("note_ph")}">${esc(form.note)}</textarea>`);
+  db.innerHTML = html;
+  renderFoot();
+}
+function renderFoot(){
+  const s = subtotal(), f = fee(), tot = s + f, df = $("#df");
+  let hint = "";
+  const under = form.mode === "delivery" && s < 40;
+  if (form.mode === "delivery") hint = under ? `<p class="hint warn">${t("min_hint",{x:zl(40-s)})}</p>` : s < 90 ? `<p class="hint">${t("free_hint",{x:zl(90-s)})}</p>` : `<p class="hint">${t("free_ok")}</p>`;
+  df.innerHTML = `${hint}<div class="sum"><div><span>${t("subtotal")}</span><span>${zl(s)}</span></div>
+    ${form.mode==="delivery" ? `<div><span>${t("fee")}</span><span>${f ? zl(f) : t("free")}</span></div>` : ""}
+    <div class="tot"><span>${t("total")}</span><span>${zl(tot)}</span></div></div>
+    <button class="go" id="place" ${under ? "disabled" : ""}>${t("place",{x:zl(tot)})}</button>`;
+}
+
+/* tracking: the one orchestrated moment */
+function place(){
+  tried = true;
+  const e = errors();
+  if (Object.keys(e).length) { renderDrawer(); const k = Object.keys(e)[0]; $(`#f_${k}`)?.focus(); return; }
+  const n = 1000 + Math.floor(Math.random() * 9000), s = subtotal(), f = fee();
+  const order = {n, lines:[...cart].map(([id,q]) => `${q} × ${item(id).pl[0]}`), total:s+f, ...form};
+  view = "track"; cart.clear(); save(); $("#cartN").textContent = 0; renderMenu();
+  const last = form.mode === "delivery" ? t("s4d") : t("s4p");
+  $("#db").innerHTML = `<div class="track">
+    <h3 style="font-size:24px;margin-bottom:4px" tabindex="-1" id="trackH">${t("track_h",{n})}</h3>
+    <div class="ring" aria-hidden="true"><svg viewBox="0 0 180 180"><circle class="bg" cx="90" cy="90" r="80"/><circle class="fg" id="fg" cx="90" cy="90" r="80"/></svg>
+      <div class="t"><b id="sec">90</b><small id="secL">${t("sec")}</small></div></div>
+    <ol class="steps" id="steps" aria-live="polite">${[t("s1"),t("s2"),t("s3"),last].map(x => `<li><i></i><span>${x}</span><small></small></li>`).join("")}</ol>
+    <p style="text-align:left;font-size:14px;font-weight:600;margin-bottom:6px">${t("kitchen")}</p>
+    <div class="tg"><div class="who"><b>BR</b>Brace Kitchen Bot</div><div class="bubble">${esc(kitchenMsg(order))}</div></div>
+    <p class="demo-note">${t("demo")}</p></div>`;
+  $("#df").innerHTML = `<button class="go" id="again">${t("new_order")}</button>`;
+  $("#trackH").focus();
+  runTrack();
+}
+function kitchenMsg(o){
+  const when = o.when === "asap" ? "jak najszybciej" : o.when;
+  return `🍕 Nowe zamówienie #${o.n}\n${o.lines.join("\n")}\n\n${o.mode === "delivery" ? `🛵 Dostawa: ${o.zone}, ${o.street}${o.flat ? ", " + o.flat : ""}` : "🏃 Odbiór osobisty"}\n⏰ ${when}\n💳 ${{card:"karta u kuriera",cash:"gotówka",online:"BLIK / online (opłacone)"}[o.pay]}\n👤 ${o.name}, ${o.phone}${o.note ? `\n📝 ${o.note}` : ""}\n\nRazem: ${o.total} zł`;
+}
+function runTrack(){
+  timers.forEach(clearTimeout); timers = [];
+  const li = [...document.querySelectorAll("#steps li")], stamp = () => new Date().toLocaleTimeString(lang, {hour:"2-digit",minute:"2-digit",hour12:false});
+  const set = i => li.forEach((x,j) => { x.className = j < i ? "on" : j === i ? "now" : ""; if (j === i - 1 && !x.lastElementChild.textContent) x.lastElementChild.textContent = stamp(); });
+  const fg = $("#fg"), sec = $("#sec"), total = 9; // demo: 9 real seconds stand for 90
+  set(0);
+  timers.push(setTimeout(() => {
+    set(1);
+    for (let k = 1; k <= total; k++) timers.push(setTimeout(() => {
+      fg.style.strokeDashoffset = 502 * (1 - k / total); sec.textContent = 90 - k * 10;
+      if (k === total) { $("#secL").textContent = t("done"); set(2); timers.push(setTimeout(() => set(3), 2200)); }
+    }, k * 1000));
+  }, 1400));
+}
+
+/* drawer open/close with focus handling */
+let lastFocus = null;
+function openCart(){
+  lastFocus = document.activeElement; if (view === "track" && !document.querySelector("#steps")) view = "cart";
+  renderDrawer(); $("#scrim").classList.add("on"); $("#drawer").classList.add("on");
+  document.body.style.overflow = "hidden"; setTimeout(() => $("#drawer").focus(), 50);
+}
+function closeCart(){
+  $("#scrim").classList.remove("on"); $("#drawer").classList.remove("on"); document.body.style.overflow = "";
+  lastFocus?.focus();
+}
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("button,[data-close]"); if (!b) return;
+  if (b.dataset.lang) { lang = b.dataset.lang; localStorage.setItem("brace_lang", lang); applyLang(); }
+  else if (b.dataset.cat) { cat = b.dataset.cat; renderTabs(); renderMenu(); $(`[data-cat="${cat}"]`).focus(); }
+  else if (b.dataset.add) { const id = b.dataset.add; setQty(id, (cart.get(id)||0) + 1); toast(t("toast_add",{x:item(id)[lang][0]}));
+    const c = $("#openCart"); c.classList.remove("bump"); void c.offsetWidth; c.classList.add("bump"); }
+  else if (b.dataset.inc) setQty(b.dataset.inc, cart.get(b.dataset.inc) + 1);
+  else if (b.dataset.dec) setQty(b.dataset.dec, cart.get(b.dataset.dec) - 1);
+  else if (b.dataset.mode) { form.mode = b.dataset.mode; renderDrawer(); }
+  else if (b.dataset.close !== undefined) { closeCart(); }
+  else if (b.id === "openCart") openCart();
+  else if (b.id === "closeCart") closeCart();
+  else if (b.id === "place") place();
+  else if (b.id === "again") { timers.forEach(clearTimeout); view = "cart"; tried = false; form.note = ""; closeCart(); location.hash = "#menu"; }
+});
+$("#scrim").addEventListener("click", closeCart);
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && $("#drawer").classList.contains("on")) closeCart();
+  if (e.key === "Tab" && $("#drawer").classList.contains("on")) {
+    const f = [...$("#drawer").querySelectorAll("button:not([disabled]),input,select,textarea")];
+    if (!f.length) return;
+    if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f.at(-1).focus(); }
+    else if (!e.shiftKey && document.activeElement === f.at(-1)) { e.preventDefault(); f[0].focus(); }
+  }
+  if ((e.key === "ArrowRight" || e.key === "ArrowLeft") && e.target.dataset?.cat) {
+    const ks = Object.keys(CATS), i = (ks.indexOf(cat) + (e.key === "ArrowRight" ? 1 : ks.length - 1)) % ks.length;
+    cat = ks[i]; renderTabs(); renderMenu(); $(`[data-cat="${cat}"]`).focus();
+  }
+});
+$("#drawer").addEventListener("input", e => {
+  const k = e.target.name; if (!k) return;
+  form[k] = e.target.value;
+  if (k === "zone" || k === "when" || k === "pay") renderDrawer();
+  else if (tried) { const err = errors()[k], f = e.target.closest(".f"); f.classList.toggle("bad", !!err); f.querySelector(".err").textContent = err || ""; }
+});
+
+const io = new IntersectionObserver(es => es.forEach(x => { if (x.isIntersecting) { x.target.classList.add("in"); io.unobserve(x.target); } }), {threshold:.15});
+document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+$("#cartN").textContent = count();
+applyLang();
+setInterval(renderStatus, 60000);
+</script>
+</body>
+</html>
