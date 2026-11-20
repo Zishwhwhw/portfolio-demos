@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Brzytwa — barbershop booking bot for Telegram (demo)</title>
+<meta name="description" content="Try a Telegram booking bot for a fictional barbershop: inline-button booking, staff notifications, reminders and review requests. Python, aiogram 3, SQLite.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--green:#1F3D33;--green-2:#2C5547;--brass:#B08D57;--page:#ECEFEA;--ink:#17201C;--muted:#5D6862;--line:#D6DBD5;
+  --wall:#B9CDB4;--bubble:#fff;--mine:#E1F7CB;--tg:#3390EC;--ease:cubic-bezier(.2,.8,.2,1)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Manrope,system-ui,sans-serif;background:var(--page);color:var(--ink);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--brass);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px}
+
+header.pitch{padding:56px 0 28px;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:end}
+.pitch h1{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:clamp(46px,6vw,82px);line-height:.95;text-transform:uppercase;color:var(--green);letter-spacing:.005em}
+.pitch p{color:var(--muted);font-size:18px;max-width:52ch;margin-top:14px}
+.stack{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.stack span{font-size:13px;font-weight:600;padding:4px 10px;border-radius:999px;background:#fff;border:1px solid var(--line)}
+.side{display:grid;gap:12px;justify-items:start}
+.side .links{display:flex;gap:16px;font-weight:600}
+.clock{display:flex;align-items:center;gap:12px;background:var(--green);color:#fff;border-radius:16px;padding:14px 16px;width:100%}
+.clock b{font-family:Anton,sans-serif;font-weight:400;font-size:30px;letter-spacing:.02em;font-variant-numeric:tabular-nums;line-height:1}
+.clock small{display:block;font-size:12.5px;opacity:.75}
+.ff{display:flex;gap:8px;flex-wrap:wrap}
+.ff button{min-height:42px;padding:0 14px;border-radius:999px;border:1.5px solid var(--green);color:var(--green);font-weight:700;font-size:14px;transition:background .2s,color .2s,opacity .2s}
+.ff button:hover:not(:disabled){background:var(--green);color:#fff}
+.ff button:disabled{opacity:.35;cursor:not-allowed}
+.ff-note{font-size:13px;color:var(--muted)}
+
+main.chats{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:20px;padding-bottom:40px}
+.win{background:#fff;border-radius:20px;overflow:hidden;display:flex;flex-direction:column;height:min(760px,calc(100vh - 40px));min-height:560px;box-shadow:0 30px 60px -36px rgba(31,61,51,.5);border:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);background:#fff}
+.ava{width:42px;height:42px;border-radius:50%;flex:none;display:grid;place-items:center;color:#fff;font-family:Anton,sans-serif;font-size:18px;background:var(--green)}
+.ava.staff{background:var(--brass)}
+.bar b{display:block;font-size:16px}
+.bar small{color:var(--muted);font-size:13px}
+.feed{flex:1;overflow-y:auto;padding:16px 14px 10px;display:flex;flex-direction:column;gap:6px;scroll-behavior:smooth;
+  background-color:var(--wall);background-image:radial-gradient(rgba(255,255,255,.28) 1.2px,transparent 1.3px),radial-gradient(rgba(31,61,51,.08) 1.2px,transparent 1.3px);
+  background-size:26px 26px,26px 26px;background-position:0 0,13px 13px}
+.staffwin .feed{background-color:#D9DED3}
+.day{align-self:center;background:rgba(31,61,51,.35);color:#fff;font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:999px;margin:6px 0}
+.msg{max-width:min(86%,440px);display:flex;flex-direction:column;gap:4px;animation:in .32s var(--ease)}
+@keyframes in{from{opacity:0;transform:translateY(8px) scale(.98)}}
+.msg.me{align-self:flex-end}
+.b{background:var(--bubble);border-radius:16px 16px 16px 6px;padding:8px 11px 6px;box-shadow:0 1px 1px rgba(0,0,0,.1);white-space:pre-line;font-size:15px;line-height:1.42;position:relative}
+.me .b{background:var(--mine);border-radius:16px 16px 6px 16px}
+.b .t{float:right;font-size:11.5px;color:#8a948e;margin:8px 0 0 10px}
+.b img{width:calc(100% + 22px);margin:-8px -11px 8px;border-radius:16px 16px 4px 4px;display:block;aspect-ratio:3/2;object-fit:cover}
+.b.map{padding:0;overflow:hidden;width:280px}
+.b.map .m{height:150px;background:linear-gradient(135deg,#E8E2D2,#D9E3D0);position:relative}
+.b.map .m::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 46px,#fff 46px 52px),repeating-linear-gradient(0deg,transparent 0 38px,#fff 38px 44px);opacity:.7}
+.b.map .m::after{content:"";position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-22px 0 0 -11px;background:#E5484D;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 4px rgba(0,0,0,.3)}
+.b.map p{padding:8px 11px;font-size:14px}
+.kb{display:grid;gap:4px}
+.kb .r{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px}
+.kb button{min-height:38px;padding:6px 8px;border-radius:10px;background:rgba(31,61,51,.42);color:#fff;font-size:14px;font-weight:600;backdrop-filter:blur(6px);transition:background .2s,transform .15s}
+.kb button:hover{background:rgba(31,61,51,.58)}
+.kb button:active{transform:scale(.97)}
+.kb button.url::after{content:" ↗"}
+.kb.used{opacity:.55;pointer-events:none}
+.typing{align-self:flex-start;background:#fff;border-radius:16px;padding:10px 14px;display:flex;gap:4px}
+.typing i{width:7px;height:7px;border-radius:50%;background:#9AA59F;animation:dot 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes dot{50%{transform:translateY(-4px);opacity:.5}}
+.alert{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%) scale(.92);background:#fff;border-radius:14px;padding:16px 18px;max-width:280px;text-align:center;box-shadow:0 20px 40px -10px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .2s,transform .25s var(--ease);z-index:3}
+.alert.on{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:auto}
+.alert button{margin-top:10px;color:var(--tg);font-weight:700;min-height:36px;padding:0 10px}
+.toastline{position:absolute;left:50%;top:12px;transform:translate(-50%,-10px);background:rgba(23,32,28,.85);color:#fff;font-size:13.5px;font-weight:600;padding:7px 12px;border-radius:10px;opacity:0;transition:opacity .2s,transform .25s var(--ease);pointer-events:none;z-index:3}
+.toastline.on{opacity:1;transform:translate(-50%,0)}
+.compose{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line);background:#fff;align-items:center}
+.compose .menu{min-height:40px;padding:0 14px;border-radius:999px;background:var(--tg);color:#fff;font-weight:700;font-size:14px}
+.compose input{flex:1;min-height:40px;border:0;background:#F1F3F1;border-radius:999px;padding:0 14px;font:inherit;font-size:15px;color:var(--muted)}
+.startbtn{width:100%;min-height:46px;border-radius:12px;background:var(--tg);color:#fff;font-weight:700;letter-spacing:.04em}
+.feedwrap{position:relative;flex:1;display:flex;flex-direction:column;min-height:0}
+.empty-staff{align-self:center;margin:auto;text-align:center;color:#4F5A54;font-size:14px;max-width:24ch}
+
+footer{padding:16px 0 48px;color:var(--muted);font-size:14.5px}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+@media (max-width:920px){
+  header.pitch,main.chats{grid-template-columns:1fr}
+  .win{height:640px}
+  .staffwin{height:420px;min-height:0}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="pitch">
+    <div>
+      <h1>A booking bot for a barbershop</h1>
+      <p>Brzytwa is a fictional barbershop in Wrocław. Clients book in a few taps, the staff chat sees every booking, and the bot sends reminders and asks for a review after the visit. Try it on the left; the right side is what the barbers see.</p>
+      <div class="stack"><span>Python 3.12</span><span>aiogram 3</span><span>SQLite</span><span>pytest</span><span>inline keyboards</span></div>
+    </div>
+    <div class="side">
+      <div class="clock"><div><small>Simulated time, Warsaw</small><b id="clock">--:--</b></div></div>
+      <div class="ff" role="group" aria-label="Fast-forward time">
+        <button id="ff1" disabled>Jump to the day before</button>
+        <button id="ff2" disabled>Jump to 2 h before</button>
+        <button id="ff3" disabled>Jump to after the visit</button>
+      </div>
+      <p class="ff-note" id="ffNote">Book a visit first, then jump ahead to see reminders and the review request.</p>
+      <div class="links"><a href="https://github.com/Zishwhwhw/portfolio-demos/tree/main/barber-bot">Bot source code</a><a href="../">More demos</a></div>
+    </div>
+  </header>
+
+  <main class="chats">
+    <section class="win" aria-label="Client chat with the bot">
+      <div class="bar"><div class="ava" aria-hidden="true">B</div><div><b>Brzytwa Barbershop</b><small>bot</small></div></div>
+      <div class="feedwrap">
+        <div class="feed" id="feed" aria-live="polite"></div>
+        <div class="alert" id="alert" role="alertdialog" aria-modal="false"><p id="alertTxt"></p><button id="alertOk">OK</button></div>
+        <div class="toastline" id="toastline"></div>
+      </div>
+      <div class="compose" id="compose"><button class="startbtn" id="startBtn">START</button></div>
+    </section>
+    <section class="win staffwin" aria-label="Barbershop staff group">
+      <div class="bar"><div class="ava staff" aria-hidden="true">S</div><div><b>Brzytwa · staff</b><small>Marek, Tomek, Igor, bot</small></div></div>
+      <div class="feed" id="staff" aria-live="polite"><p class="empty-staff">Bookings and cancellations land here the moment a client confirms.</p></div>
+      <div class="compose"><button class="menu" id="todayBtn">/today</button><input disabled placeholder="Message" aria-label="Message (disabled in demo)"></div>
+    </section>
+  </main>
+</div>
+<footer><div class="wrap"><span>Brzytwa is fictional. Portfolio demo by Andrii Drymchenko. The chat runs in your browser and mirrors the rules in <code>shop.py</code>.</span><a href="../credits.html">Photo credits</a></div></footer>
+
+<script>
+/* ---------- rules: same numbers as shop.py ---------- */
+const SERVICES = {cut:["Haircut",60,90],fade:["Skin fade",60,100],beard:["Beard trim",30,60],combo:["Haircut + beard",90,140],kids:["Kids cut (under 12)",45,70],shave:["Head shave",45,70]};
+const ALL = Object.keys(SERVICES);
+const BARBERS = {marek:["Marek",ALL],tomek:["Tomek",ALL.filter(s => s !== "kids")],igor:["Igor",["cut","fade","beard","combo"]]};
+const HOURS = {1:[10,20],2:[10,20],3:[10,20],4:[10,20],5:[10,20],6:[9,16]};  // JS weekday: Sunday is 0, closed
+const STEP = 30, LEAD = 60, ADDRESS = "ul. Ruska 18, Wrocław";
+const MIN = 60000, H = 60 * MIN;
+
+function warsawNow(){ return new Date(new Date().toLocaleString("en-US",{timeZone:"Europe/Warsaw"})); }
+let clockOffset = 0;
+const now = () => new Date(warsawNow().getTime() + clockOffset);
+const visits = [];        // {id, svc, bar, start: Date, status, sent:Set, rating}
+// some existing bookings so the grid looks like a real week
+(function seed(){
+  const n = now(), pick = [["marek","cut",0,11],["igor","fade",0,15],["tomek","combo",1,12],["marek","beard",1,17],["igor","cut",2,10],["tomek","fade",2,16],["marek","combo",3,13]];
+  for (const [bar, svc, dd, h] of pick) { const d = openDays(n)[dd]; if (!d) continue; const s = new Date(d); s.setHours(h, 0, 0, 0); visits.push({id:100 + visits.length, svc, bar, start:s, status:"booked", sent:new Set(), seed:true}); }
+})();
+function barbersFor(svc){ return Object.keys(BARBERS).filter(b => BARBERS[b][1].includes(svc)); }
+function openDays(from, n = 7){
+  const out = [], d = new Date(from); d.setHours(0,0,0,0);
+  while (out.length < n) { if (HOURS[d.getDay()]) out.push(new Date(d)); d.setDate(d.getDate() + 1); }
+  return out;
+}
+function freeSlots(day, svc, bar){
+  if (!BARBERS[bar] || !BARBERS[bar][1].includes(svc) || !HOURS[day.getDay()]) return [];
+  const [o, c] = HOURS[day.getDay()], len = SERVICES[svc][1] * MIN, t0 = now().getTime() + LEAD * MIN;
+  const busy = visits.filter(v => v.status === "booked" && v.bar === bar && v.start.toDateString() === day.toDateString())
+    .map(v => [v.start.getTime(), v.start.getTime() + SERVICES[v.svc][1] * MIN]);
+  const out = [];
+  for (let t = new Date(day).setHours(o,0,0,0), close = new Date(day).setHours(c,0,0,0); t + len <= close; t += STEP * MIN)
+    if (t >= t0 && busy.every(([s, e]) => t + len <= s || t >= e)) out.push(t);
+  return out;
+}
+function slotsFor(svc, bar, day){
+  const m = new Map();
+  for (const b of bar === "any" ? barbersFor(svc) : [bar]) for (const t of freeSlots(day, svc, b)) if (!m.has(t)) m.set(t, b);
+  return new Map([...m].sort((a, b) => a[0] - b[0]));
+}
+const fmtDay = d => d.toLocaleDateString("en-GB",{weekday:"short", day:"2-digit"});
+const fmtLong = d => d.toLocaleDateString("en-GB",{weekday:"long", day:"2-digit", month:"long"});
+const hm = d => `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+const describe = (svc, bar, start) => `${SERVICES[svc][0]} with ${BARBERS[bar][0]}\n${fmtLong(start)}, ${hm(start)} (${SERVICES[svc][1]} min) · ${SERVICES[svc][2]} zł`;
+
+/* ---------- chat UI ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let mid = 0;
+function bubble(target, {me, text, photo, kb, map}){
+  const el = document.createElement("div"); el.className = "msg" + (me ? " me" : ""); el.dataset.id = ++mid;
+  el.innerHTML = map ? `<div class="b map"><div class="m"></div><p>${esc(text)}</p></div>` :
+    `<div class="b">${photo ? `<img src="${photo}" alt="Barber chair in the shop">` : ""}${esc(text)}<span class="t">${hm(now())}</span></div>`;
+  if (kb) el.appendChild(keyboard(kb));
+  const feed = $(target); feed.querySelector(".empty-staff")?.remove(); feed.appendChild(el); feed.scrollTop = feed.scrollHeight;
+  return el;
+}
+function keyboard(rows){
+  const k = document.createElement("div"); k.className = "kb";
+  k.innerHTML = rows.map(r => `<div class="r">${r.map(b => `<button data-cb="${esc(b.cb || "")}"${b.url ? ` data-url="${esc(b.url)}" class="url"` : ""}>${esc(b.text)}</button>`).join("")}</div>`).join("");
+  return k;
+}
+function edit(el, text, kb){
+  el.querySelector(".b").innerHTML = `${esc(text)}<span class="t">${hm(now())}</span>`;
+  el.querySelector(".kb")?.remove(); if (kb) el.appendChild(keyboard(kb));
+  el.animate?.([{opacity:.55},{opacity:1}], {duration:220});
+  $("#feed").scrollTop = $("#feed").scrollHeight;
+}
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function botSay(opts, delay = 450){
+  const t = document.createElement("div"); t.className = "typing"; t.innerHTML = "<i></i><i></i><i></i>"; $("#feed").appendChild(t); $("#feed").scrollTop = $("#feed").scrollHeight;
+  await sleep(delay); t.remove(); return bubble("#feed", opts);
+}
+function staff(text){ bubble("#staff", {text}); }
+function alertBox(text){ $("#alertTxt").textContent = text; $("#alert").classList.add("on"); $("#alertOk").focus(); }
+function toast(text){ const t = $("#toastline"); t.textContent = text; t.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("on"), 1600); }
+
+/* ---------- handlers: same flow as bot.py ---------- */
+const home = [[{text:"✂️ Book a visit",cb:"m:book"}],[{text:"📅 My visits",cb:"m:visits"},{text:"💈 Prices",cb:"m:prices"}],[{text:"📍 How to find us",cb:"m:where"}]];
+const user = {id:1, name:"Kuba"};
+let flowMsg = null;
+
+async function start(){
+  bubble("#feed", {me:true, text:"/start"});
+  await botSay({photo:"img/chair.jpg", text:`Hi, ${user.name}! This is Brzytwa barbershop on Ruska street.\n\nBook a cut in four taps. We remind you the day before and two hours before.`, kb:home}, 600);
+  $("#compose").innerHTML = `<button class="menu" id="menuBtn">Menu</button><input disabled placeholder="Message" aria-label="Message (use the buttons)">`;
+}
+async function onCb(cb, el){
+  const [kind, ...a] = cb.split(":");
+  if (kind === "m") {
+    if (a[0] === "book") flowMsg = await botSay({text:"Which service?", kb:Object.entries(SERVICES).map(([id,[n,,p]]) => [{text:`${n} · ${p} zł`, cb:`svc:${id}`}])});
+    if (a[0] === "prices") await botSay({text:"💈 Prices\n\n" + Object.values(SERVICES).map(([n,m,p]) => `${n} — ${p} zł · ${m} min`).join("\n") + "\n\nCard or cash, paid after the visit."});
+    if (a[0] === "where") { await botSay({map:true, text:ADDRESS}); await botSay({text:`📍 ${ADDRESS}\nMon–Fri 10:00–20:00, Sat 9:00–16:00, Sunday closed.`}, 250); }
+    if (a[0] === "visits") {
+      const mine = visits.filter(v => v.user === user.id && v.status === "booked" && v.start > now());
+      if (!mine.length) await botSay({text:"No upcoming visits.", kb:[[{text:"✂️ Book a visit", cb:"m:book"}]]});
+      for (const v of mine) await botSay({text:describe(v.svc, v.bar, v.start), kb:[[{text:"Cancel this visit", cb:`cancel:${v.id}`}]]}, 250);
+    }
+    return;
+  }
+  const msg = el.closest(".msg");
+  if (kind === "svc") { const [svc] = a;
+    edit(msg, `${SERVICES[svc][0]}. Who should do it?`, [barbersFor(svc).map(b => ({text:BARBERS[b][0], cb:`bar:${svc}:${b}`})), [{text:"Any barber", cb:`bar:${svc}:any`}], [{text:"‹ Back", cb:"back:book"}]]); }
+  if (kind === "back") { edit(msg, "Which service?", Object.entries(SERVICES).map(([id,[n,,p]]) => [{text:`${n} · ${p} zł`, cb:`svc:${id}`}])); }
+  if (kind === "bar") { const [svc, bar] = a, days = openDays(now()), rows = [];
+    days.forEach((d, i) => { const free = slotsFor(svc, bar, d).size; (rows[Math.floor(i/4)] ||= []).push({text:fmtDay(d) + (free ? "" : " · full"), cb:free ? `day:${svc}:${bar}:${d.getTime()}` : "full"}); });
+    rows.push([{text:"‹ Back", cb:`svc:${svc}`}]); edit(msg, "Which day?", rows); }
+  if (kind === "full") alertBox("No free time that day. Try another one.");
+  if (kind === "day") { const [svc, bar, ts] = a, d = new Date(+ts), s = [...slotsFor(svc, bar, d).keys()], rows = [];
+    s.forEach((t, i) => (rows[Math.floor(i/4)] ||= []).push({text:hm(new Date(t)), cb:`time:${svc}:${bar}:${t}`}));
+    rows.push([{text:"‹ Back", cb:`bar:${svc}:${bar}`}]);
+    edit(msg, s.length ? `${fmtLong(d)}. Free times:` : "Someone just took the last slot that day. Pick another day.", rows); }
+  if (kind === "time") { const [svc, bar, ts] = a, t = new Date(+ts), d = new Date(t); d.setHours(0,0,0,0);
+    const who = bar === "any" ? slotsFor(svc, "any", d).get(+ts) : bar;
+    if (!who) return alertBox("That time was just taken.");
+    edit(msg, "Check the details:\n\n" + describe(svc, who, t), [[{text:"✅ Confirm", cb:`ok:${svc}:${bar}:${ts}`}],[{text:"Change time", cb:`day:${svc}:${bar}:${d.getTime()}`}]]); }
+  if (kind === "ok") { const [svc, bar, ts] = a, t = new Date(+ts), d = new Date(t); d.setHours(0,0,0,0);
+    const who = slotsFor(svc, bar, d).get(+ts);
+    if (!who || (bar !== "any" && who !== bar)) return alertBox("This time was just taken. Please pick another one.");
+    const v = {id:2400 + visits.length, svc, bar:who, start:t, status:"booked", sent:new Set(), user:user.id, created:now()};
+    visits.push(v);
+    edit(msg, `Booked ✂️\n\n${describe(svc, who, t)}\n📍 ${ADDRESS}\n\nWe’ll remind you the day before. You can cancel up to 3 hours before in “My visits”.`);
+    toast("Booked!");
+    await sleep(500); staff(`🆕 Booking #${v.id}\n${describe(svc, who, t)}\nClient: @kuba_wro`);
+    armFastForward(); }
+  if (kind === "cancel") { const v = visits.find(x => x.id === +a[0]);
+    if (!v || v.status !== "booked") return alertBox("This visit is already cancelled.");
+    if (v.start - now() < 3 * H) return alertBox("Less than 3 hours left. Please call us: +48 71 000 00 00");
+    v.status = "cancelled"; edit(msg, "Cancelled. The time is free again for someone else.");
+    await sleep(400); staff(`❌ Cancelled #${v.id}: ${describe(v.svc, v.bar, v.start)}`); armFastForward(); }
+  if (kind === "fine") { msg.querySelector(".kb")?.remove(); toast("See you!"); }
+  if (kind === "rate") { const [id, n] = a.map(Number), v = visits.find(x => x.id === id);
+    if (v.rating) return toast("Already rated, thank you!");
+    v.rating = n; msg.querySelector(".kb")?.remove();
+    if (n === 5) await botSay({text:"Thank you! If you have a minute, a Google review helps us a lot.", kb:[[{text:"Leave a Google review", url:"#"}]]});
+    else { await botSay({text:"Thanks for being honest. Reply here with what we could do better, the owner reads it."}); staff(`⭐ ${n}/5 for visit #${v.id}`); } }
+}
+
+/* ---------- time travel: shows the reminder loop from bot.py ---------- */
+function myNext(){ return visits.filter(v => v.user === user.id && v.status === "booked").sort((a, b) => a.start - b.start)[0]; }
+function armFastForward(){
+  const v = myNext(), on = !!v;
+  ["#ff1","#ff2","#ff3"].forEach(s => $(s).disabled = !on);
+  if (on) { $("#ff1").disabled = v.start - now() <= 24 * H || v.created > new Date(v.start - 24 * H); $("#ff2").disabled = v.start - now() <= 2 * H; }
+  $("#ffNote").textContent = on ? `Next visit: ${fmtLong(v.start)}, ${hm(v.start)}. Jump ahead to see what the bot sends.` : "Book a visit first, then jump ahead to see reminders and the review request.";
+}
+async function jump(to){
+  clockOffset += Math.max(0, to - now()); tick();
+  const v = myNext(); if (!v) return;
+  const left = v.start - now(), end = new Date(v.start.getTime() + SERVICES[v.svc][1] * MIN);
+  bubble("#feed", {text:""}).remove();
+  const day = document.createElement("div"); day.className = "day"; day.textContent = fmtLong(now()) + ", " + hm(now()); $("#feed").appendChild(day);
+  if (left > 0 && left <= 2 * H && !v.sent.has("soon")) { v.sent.add("soon"); await botSay({text:`⏰ In 2 hours: ${describe(v.svc, v.bar, v.start)}\n📍 ${ADDRESS}`, kb:[[{text:"👍 See you", cb:`fine:${v.id}`},{text:"Cancel", cb:`cancel:${v.id}`}]]}); }
+  else if (left > 2 * H && left <= 24 * H && !v.sent.has("day")) { v.sent.add("day"); await botSay({text:`⏰ Tomorrow: ${describe(v.svc, v.bar, v.start)}\n📍 ${ADDRESS}`, kb:[[{text:"👍 See you", cb:`fine:${v.id}`},{text:"Cancel", cb:`cancel:${v.id}`}]]}); }
+  else if (now() >= new Date(end.getTime() + 2 * H) && !v.sent.has("review")) { v.sent.add("review"); v.status = "done";
+    await botSay({text:`How was your ${SERVICES[v.svc][0].toLowerCase()} with ${BARBERS[v.bar][0]}?`, kb:[[1,2,3,4,5].map(n => ({text:n === 1 ? "⭐" : n === 5 ? "⭐⭐⭐⭐⭐" : String(n), cb:`rate:${v.id}:${n}`}))]}); }
+  armFastForward();
+}
+$("#ff1").onclick = () => { const v = myNext(); jump(new Date(v.start - 23 * H)); };
+$("#ff2").onclick = () => { const v = myNext(); jump(new Date(v.start - 100 * MIN)); };
+$("#ff3").onclick = () => { const v = myNext(); jump(new Date(v.start.getTime() + (SERVICES[v.svc][1] + 125) * MIN)); };
+$("#todayBtn").onclick = () => {
+  bubble("#staff", {me:true, text:"/today"});
+  const d = now(), rows = visits.filter(v => v.status === "booked" && v.start.toDateString() === d.toDateString()).sort((a, b) => a.start - b.start);
+  setTimeout(() => staff(rows.length ? "Today:\n" + rows.map(v => `${hm(v.start)} ${SERVICES[v.svc][0]} · ${BARBERS[v.bar][0]} · ${v.user ? "Kuba" : ["Adam","Piotr","Michał","Olek","Bartek","Szymon","Paweł"][v.id % 7]}`).join("\n") : "No bookings today."), 350);
+};
+function tick(){ const n = now(); $("#clock").textContent = `${n.toLocaleDateString("en-GB",{weekday:"short", day:"2-digit", month:"short"})} · ${hm(n)}`; }
+tick(); setInterval(tick, 15000);
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.id === "startBtn" || b.id === "menuBtn") return b.id === "startBtn" ? start() : (bubble("#feed", {me:true, text:"/start"}), botSay({text:"What would you like to do?", kb:home}));
+  if (b.id === "alertOk") return $("#alert").classList.remove("on");
+  if (b.dataset.url !== undefined) { e.preventDefault(); return alertBox("In Telegram this opens the shop’s Google review page."); }
+  if (b.dataset.cb) onCb(b.dataset.cb, b);
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") $("#alert").classList.remove("on"); });
+</script>
+</body>
+</html>

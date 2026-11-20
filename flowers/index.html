@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Mak Flowers — Telegram Mini App (demo)</title>
+<meta name="description" content="Demo Telegram Mini App for a fictional flower shop: catalog, bouquet sizes, card message, delivery slots and checkout with the Telegram MainButton.">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff;--bg2:#f2f2f6;--text:#111317;--hint:#8a8f99;--link:#d9483b;--btn:#d9483b;--btn-text:#ffffff;--sec:#ffffff;--sep:rgba(0,0,0,.08);
+  --ease:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.3,1.35,.5,1);
+}
+.dark{--bg:#17191d;--bg2:#0e0f12;--text:#f2f3f5;--hint:#8d929c;--link:#ff7b6b;--btn:#e2574a;--btn-text:#fff;--sec:#202329;--sep:rgba(255,255,255,.08)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.4;color:var(--text);background:var(--bg2);-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;touch-action:manipulation}
+img{display:block;max-width:100%}
+:focus-visible{outline:2px solid var(--link);outline-offset:2px;border-radius:8px}
+
+/* ---------- browser pitch (hidden inside Telegram) ---------- */
+.stage{min-height:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:64px;align-items:center;max-width:1180px;margin:0 auto;padding:48px 28px;font-family:Onest,system-ui,sans-serif;color:#1d1a22}
+.in-tg .stage{display:block;padding:0;max-width:none}
+.in-tg .pitch{display:none}
+body.page{background:#F4EFEA}
+.pitch h1{font-size:clamp(40px,5vw,64px);line-height:1;letter-spacing:-.03em;font-weight:800;max-width:12ch}
+.pitch p{font-size:19px;color:#5d5560;max-width:44ch;margin-top:18px}
+.pitch ul{list-style:none;margin-top:26px;display:grid;gap:12px;font-size:16px}
+.pitch li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start}
+.pitch li svg{width:22px;height:22px;color:#d9483b;margin-top:1px}
+.pitch .row{display:flex;gap:10px;margin-top:28px;flex-wrap:wrap;align-items:center}
+.pitch .theme{display:flex;background:#fff;border-radius:999px;padding:4px;border:1px solid #e4dcd6}
+.pitch .theme button{padding:8px 14px;border-radius:999px;font-weight:600;font-size:14px;min-height:40px;font-family:Onest,sans-serif}
+.pitch .theme button[aria-pressed=true]{background:#1d1a22;color:#fff}
+.pitch a{color:#1d1a22;font-weight:600}
+.pitch small{display:block;margin-top:22px;color:#8a8089;font-size:14px;max-width:48ch}
+.phone{width:390px;height:800px;border-radius:54px;background:#111;padding:12px;box-shadow:0 40px 80px -30px rgba(70,30,20,.45),0 0 0 1px #2a2a2a inset;position:relative}
+.screen{position:relative;width:100%;height:100%;border-radius:43px;overflow:hidden;background:var(--bg2);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;isolation:isolate}
+.tgbar{height:88px;padding:44px 16px 0;display:flex;align-items:center;gap:10px;background:var(--bg);border-bottom:1px solid var(--sep);font-size:15px;color:var(--text)}
+.tgbar b{flex:1;text-align:center;font-weight:600}
+.tgbar span{color:var(--link);min-width:60px}
+.tgbar i{min-width:60px;text-align:right;font-style:normal;color:var(--hint)}
+.in-tg .phone{width:auto;height:auto;border-radius:0;background:none;padding:0;box-shadow:none}
+.in-tg .screen{border-radius:0;height:100vh;height:var(--tg-viewport-stable-height,100vh)}
+.in-tg .tgbar,.in-tg .fakebtn{display:none}
+
+/* ---------- the app ---------- */
+.app{position:absolute;inset:88px 0 0 0;overflow:hidden}
+.in-tg .app{inset:0}
+.view{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:96px;background:var(--bg2);transition:transform .38s var(--ease),opacity .38s var(--ease)}
+.view.off-r{transform:translateX(100%)}
+.view.off-l{transform:translateX(-24%);opacity:.6}
+.hide{display:none!important}
+
+.hero{padding:16px 16px 6px;background:var(--bg)}
+.hero h2{font-size:24px;font-weight:700;letter-spacing:-.02em}
+.hero p{color:var(--hint);font-size:14px;margin-top:2px}
+.deliv{display:flex;gap:10px;align-items:center;margin-top:12px;padding:10px 12px;border-radius:14px;background:var(--bg2);font-size:14px}
+.deliv svg{flex:none;color:var(--link)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 16px;background:var(--bg);scrollbar-width:none;border-bottom:1px solid var(--sep);position:sticky;top:0;z-index:2}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:8px 14px;border-radius:999px;background:var(--bg2);font-size:14px;font-weight:600;min-height:36px;transition:background .2s,color .2s}
+.chip[aria-pressed=true]{background:var(--text);color:var(--bg)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px}
+.item{background:var(--bg);border-radius:18px;overflow:hidden;text-align:left;display:flex;flex-direction:column;transition:transform .2s var(--ease)}
+.item:active{transform:scale(.97)}
+.item .ph{aspect-ratio:4/5;background:var(--bg2);position:relative;overflow:hidden}
+.item img{width:100%;height:100%;object-fit:cover}
+.item .badge{position:absolute;left:8px;top:8px;background:rgba(255,255,255,.92);color:#111;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px}
+.item .bd{padding:9px 11px 11px}
+.item .nm{font-weight:600;font-size:14.5px;line-height:1.25}
+.item .pr{color:var(--hint);font-size:13.5px;margin-top:2px}
+.item .inc{position:absolute;right:8px;bottom:8px;min-width:30px;height:30px;padding:0 9px;border-radius:999px;background:var(--btn);color:var(--btn-text);font-weight:700;font-size:14px;display:grid;place-items:center;transform:scale(0);transition:transform .35s var(--spring)}
+.item .inc.on{transform:scale(1)}
+
+/* sheet */
+.scrim{position:absolute;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .3s;z-index:8}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:92%;background:var(--bg);border-radius:22px 22px 0 0;z-index:9;transform:translateY(102%);transition:transform .42s var(--ease);display:flex;flex-direction:column;overflow:hidden}
+.sheet.on{transform:none}
+.sheet .grab{height:22px;display:grid;place-items:center;flex:none;cursor:grab;touch-action:none}
+.sheet .grab::after{content:"";width:38px;height:5px;border-radius:3px;background:var(--sep);background:color-mix(in srgb,var(--hint) 45%,transparent)}
+.sheet .sc{overflow-y:auto;padding:0 16px 104px}
+.sheet .big{aspect-ratio:4/3;border-radius:16px;overflow:hidden;margin-bottom:14px}
+.sheet .big img{width:100%;height:100%;object-fit:cover}
+.sheet h3{font-size:22px;font-weight:700;letter-spacing:-.01em}
+.sheet .desc{color:var(--hint);font-size:14.5px;margin:6px 0 16px}
+.lab{font-size:13px;font-weight:600;color:var(--hint);text-transform:none;margin:14px 0 8px}
+.sizes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.size{border:1.5px solid var(--sep);border-radius:14px;padding:10px 6px;text-align:center;transition:border-color .2s,background .2s}
+.size b{display:block;font-size:17px}
+.size small{color:var(--hint);font-size:12.5px}
+.size[aria-checked=true]{border-color:var(--btn);background:color-mix(in srgb,var(--btn) 8%,transparent)}
+textarea.card{width:100%;min-height:76px;border:1.5px solid var(--sep);border-radius:14px;padding:10px 12px;background:var(--bg2);resize:none;font-size:15px}
+textarea.card:focus{outline:none;border-color:var(--btn)}
+.count{text-align:right;font-size:12px;color:var(--hint);margin-top:4px}
+
+/* cart / checkout */
+.sect{background:var(--bg);margin:12px 12px 0;border-radius:18px;padding:4px 14px}
+.sect h4{font-size:13px;font-weight:600;color:var(--hint);margin:12px 0 4px}
+.cl{display:grid;grid-template-columns:54px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--sep)}
+.cl:last-child{border-bottom:0}
+.cl img{width:54px;height:66px;border-radius:10px;object-fit:cover}
+.cl .nm{font-weight:600;font-size:15px}
+.cl small{display:block;color:var(--hint);font-size:13px}
+.qty{display:flex;align-items:center;gap:2px;background:var(--bg2);border-radius:999px}
+.qty button{width:32px;height:32px;display:grid;place-items:center;font-size:18px;font-weight:700;color:var(--link)}
+.qty span{min-width:16px;text-align:center;font-weight:600;font-size:14px}
+.days{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:4px 0 10px}
+.days::-webkit-scrollbar{display:none}
+.day{flex:none;width:58px;padding:8px 0;border-radius:14px;border:1.5px solid var(--sep);text-align:center;transition:border-color .2s,background .2s}
+.day small{display:block;font-size:11.5px;color:var(--hint)}
+.day b{font-size:18px}
+.day[aria-checked=true]{border-color:var(--btn);background:color-mix(in srgb,var(--btn) 8%,transparent)}
+.day:disabled{opacity:.35}
+.slots{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-bottom:12px}
+.slot{padding:10px;border-radius:12px;border:1.5px solid var(--sep);font-size:14px;font-weight:600;transition:border-color .2s,background .2s}
+.slot[aria-checked=true]{border-color:var(--btn);background:color-mix(in srgb,var(--btn) 8%,transparent)}
+.slot:disabled{opacity:.35;text-decoration:line-through}
+.fld{display:block;padding:10px 0;border-bottom:1px solid var(--sep)}
+.fld:last-of-type{border-bottom:0}
+.fld span{display:block;font-size:12.5px;color:var(--hint)}
+.fld input{width:100%;border:0;background:none;font-size:16px;padding:2px 0;outline:none}
+.fld.bad span{color:#e5484d}
+.fld em{display:none;font-style:normal;font-size:12.5px;color:#e5484d}
+.fld.bad em{display:block}
+.tog{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--sep);font-size:15px}
+.tog:last-child{border-bottom:0}
+.tog small{display:block;color:var(--hint);font-size:12.5px}
+.sw{width:50px;height:30px;border-radius:999px;background:color-mix(in srgb,var(--hint) 35%,transparent);position:relative;flex:none;transition:background .25s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .3s var(--spring)}
+.sw[aria-checked=true]{background:#34c759}
+.sw[aria-checked=true]::after{transform:translateX(20px)}
+.tot{display:flex;justify-content:space-between;padding:10px 0;font-size:15px}
+.tot.b{font-weight:700;font-size:17px;border-top:1px solid var(--sep)}
+.empty{text-align:center;padding:80px 30px;color:var(--hint)}
+.empty b{display:block;color:var(--text);font-size:18px;margin-bottom:4px}
+
+/* done */
+.done{padding:36px 22px;text-align:center}
+.tick{width:84px;height:84px;margin:0 auto 18px;border-radius:50%;background:#34c759;display:grid;place-items:center;animation:pop .6s var(--spring)}
+.tick svg{stroke-dasharray:40;stroke-dashoffset:40;animation:draw .5s .25s var(--ease) forwards}
+@keyframes pop{from{transform:scale(.3);opacity:0}}
+@keyframes draw{to{stroke-dashoffset:0}}
+.done h3{font-size:22px}
+.done p{color:var(--hint);margin-top:6px}
+.receipt{text-align:left;background:var(--bg);border-radius:18px;padding:6px 14px;margin-top:20px}
+.receipt div{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--sep);font-size:14.5px}
+.receipt div:last-child{border-bottom:0}
+.receipt span{color:var(--hint)}
+
+/* fake MainButton for browser */
+.fakebtn{position:absolute;left:12px;right:12px;bottom:14px;height:52px;border-radius:14px;background:var(--btn);color:var(--btn-text);font-weight:600;font-size:16px;z-index:12;display:flex;align-items:center;justify-content:center;gap:8px;transform:translateY(140%);transition:transform .35s var(--ease),opacity .2s}
+.fakebtn.on{transform:none}
+.fakebtn:active{opacity:.85}
+.fakebtn .spin{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cartfab{position:absolute;right:14px;bottom:14px;z-index:7;height:52px;padding:0 18px;border-radius:999px;background:var(--text);color:var(--bg);font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 10px 24px -10px rgba(0,0,0,.5);transform:translateY(160%);transition:transform .4s var(--spring)}
+.cartfab.on{transform:none}
+.in-tg .cartfab{display:none}
+.toast{position:absolute;left:50%;top:100px;transform:translate(-50%,-12px);background:rgba(20,20,22,.92);color:#fff;padding:9px 14px;border-radius:12px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s var(--ease);z-index:20;white-space:nowrap}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.in-tg .toast{top:14px}
+
+@media (max-width:900px){
+  .stage{grid-template-columns:1fr;justify-items:center;gap:36px}
+  .pitch{max-width:560px}
+}
+@media (max-width:440px){
+  .phone{width:100%;height:760px;border-radius:40px;padding:8px}
+  .screen{border-radius:33px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.tick svg{stroke-dashoffset:0}}
+</style>
+</head>
+<body class="page">
+<div class="stage">
+  <div class="pitch">
+    <h1>A flower shop inside Telegram</h1>
+    <p>Mak is a fictional florist in Warsaw. Customers open the shop from the bot, pick a bouquet, write a card and choose a delivery window without leaving the chat.</p>
+    <ul>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg><span>Follows the user’s Telegram theme, light or dark</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg><span>Telegram MainButton, BackButton and haptic feedback</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg><span>Same-day slots close at 14:00, sold-out windows are disabled</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg><span>Checkout through Telegram Payments, order alert to the florist’s chat</span></li>
+    </ul>
+    <div class="row">
+      <div class="theme" role="group" aria-label="Preview theme"><button data-theme="light" aria-pressed="true">Light</button><button data-theme="dark" aria-pressed="false">Dark</button></div>
+      <a href="../">More demos</a> · <a href="../credits.html">Photo credits</a>
+    </div>
+    <small>Brand, prices and shop are fictional. Portfolio demo by Andrii Drymchenko. Payment is simulated.</small>
+  </div>
+
+  <div class="phone">
+    <div class="screen" id="screen">
+      <div class="tgbar" aria-hidden="true"><span id="tgBack">Close</span><b>Mak Flowers</b><i>bot</i></div>
+      <div class="app" id="app">
+
+        <section class="view" id="vShop" aria-label="Catalog">
+          <div class="hero">
+            <h2>Fresh today</h2>
+            <p>Bouquets are made to order in our studio on Mokotów</p>
+            <div class="deliv" id="delivNote"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg><span></span></div>
+          </div>
+          <div class="chips" id="chips" role="group" aria-label="Filter"></div>
+          <div class="grid" id="grid"></div>
+        </section>
+
+        <section class="view off-r" id="vCart" aria-label="Checkout"></section>
+        <section class="view off-r" id="vDone" aria-label="Order placed"></section>
+
+        <div class="scrim" id="scrim"></div>
+        <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sTitle"><div class="grab" id="grab"></div><div class="sc" id="sheetBody"></div></div>
+        <button class="cartfab" id="cartFab"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 7h18l-2 13H5L3 7Z"/><path d="M8 7a4 4 0 0 1 8 0"/></svg><span id="fabTxt"></span></button>
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      </div>
+      <button class="fakebtn" id="fakeBtn"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+const inTG = !!(tg && tg.initData);
+const ITEMS = [
+  {id:"meadow",name:"Summer meadow",img:"meadow",price:119,tags:["seasonal"],desc:"Daisies, pink hydrangea, wild grasses and whatever looks best at the market that morning."},
+  {id:"autumn",name:"Old roses & chrysanthemum",img:"autumn-roses",price:159,tags:["roses"],desc:"Dusty pink garden roses with copper chrysanthemums. Warm, a little moody."},
+  {id:"bridal",name:"Pastel bridal",img:"bridal",price:249,tags:["wedding"],badge:"Order 2 days ahead",desc:"Hand-tied bouquet of lisianthus, spray roses and hydrangea. We make it the evening before."},
+  {id:"daisies",name:"Chamomile in a tin",img:"daisies",price:89,tags:["seasonal"],desc:"Field chamomile in a reusable zinc tin. Stays fresh for a week."},
+  {id:"hydrangea",name:"White hydrangea",img:"hydrangea",price:189,tags:["wedding"],desc:"White hydrangea, cream roses and eucalyptus. Calm and very full."},
+  {id:"tulips",name:"Tulip mix",img:"tulips",price:99,tags:["tulips"],badge:"Bestseller",desc:"Twenty-five Dutch tulips in five colours, wrapped in kraft paper."},
+  {id:"wtulips",name:"White tulips",img:"white-tulips",price:109,tags:["tulips"],desc:"Twenty-five white tulips. They keep opening for days in a vase."},
+  {id:"sun",name:"Orange roses",img:"sun-roses",price:139,tags:["roses"],desc:"Fifteen orange roses with pink spray roses in clear wrap."},
+  {id:"red",name:"Red roses",img:"red-roses",price:179,tags:["roses"],desc:"Fifteen deep red Naomi roses, long stems. A classic for a reason."},
+  {id:"pink",name:"Roses & baby’s breath",img:"pink-roses",price:169,tags:["roses"],desc:"Twenty-one pink roses in a cloud of gypsophila."},
+];
+const CHIPS = [["all","All"],["roses","Roses"],["tulips","Tulips"],["seasonal","Seasonal"],["wedding","Wedding"]];
+const SIZES = [["S",.8,"15 stems"],["M",1,"25 stems"],["L",1.4,"35 stems"]];
+const SLOTS = ["9:00–12:00","12:00–15:00","15:00–18:00","18:00–21:00"];
+const DELIVERY = 19, FREE_FROM = 200;
+
+const st = {chip:"all", cart:[], view:"shop", sheet:null, size:"M", card:"", day:null, slot:null, f:{to:"",phone:"",addr:"",from:""}, surprise:true, anon:false, tried:false};
+const $ = s => document.querySelector(s);
+const zl = n => `${Math.round(n)} zł`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const haptic = (k, v) => { try { inTG && tg.HapticFeedback[k](v); } catch (e) {} };
+
+/* ---------- Telegram glue ---------- */
+if (inTG) {
+  document.documentElement.classList.add("in-tg"); document.body.classList.remove("page");
+  tg.ready(); tg.expand();
+  const applyTheme = () => {
+    const p = tg.themeParams, r = document.documentElement.style;
+    if (p.bg_color) r.setProperty("--bg", p.bg_color);
+    if (p.secondary_bg_color) r.setProperty("--bg2", p.secondary_bg_color);
+    if (p.text_color) r.setProperty("--text", p.text_color);
+    if (p.hint_color) r.setProperty("--hint", p.hint_color);
+    if (p.link_color) r.setProperty("--link", p.link_color);
+    if (p.button_color) r.setProperty("--btn", p.button_color);
+    if (p.button_text_color) r.setProperty("--btn-text", p.button_text_color);
+  };
+  applyTheme(); tg.onEvent("themeChanged", applyTheme);
+  tg.MainButton.onClick(() => mainAction());
+  tg.BackButton.onClick(() => back());
+}
+const MB = {
+  set(text, on = true, progress = false){
+    if (inTG) { if (!on) return tg.MainButton.hide(); tg.MainButton.setText(text); tg.MainButton.show(); progress ? tg.MainButton.showProgress() : tg.MainButton.hideProgress(); return; }
+    const b = $("#fakeBtn"); b.classList.toggle("on", on); b.innerHTML = progress ? `<span class="spin"></span>` : esc(text);
+  }
+};
+function setBack(on){ if (inTG) on ? tg.BackButton.show() : tg.BackButton.hide(); else $("#tgBack").textContent = on ? "‹ Back" : "Close"; }
+
+/* ---------- catalog ---------- */
+function renderChips(){
+  $("#chips").innerHTML = CHIPS.map(([k,l]) => `<button class="chip" data-chip="${k}" aria-pressed="${st.chip===k}">${l}</button>`).join("");
+}
+const inCart = id => st.cart.filter(l => l.id === id).reduce((a,l) => a + l.q, 0);
+function renderGrid(){
+  $("#grid").innerHTML = ITEMS.filter(i => st.chip === "all" || i.tags.includes(st.chip)).map(i => `
+    <button class="item" data-open="${i.id}" aria-label="${esc(i.name)}, from ${zl(i.price*.8)}">
+      <div class="ph"><img src="img/${i.img}.jpg" alt="" loading="lazy">${i.badge ? `<span class="badge">${i.badge}</span>` : ""}
+      <span class="inc${inCart(i.id) ? " on" : ""}">${inCart(i.id) || ""}</span></div>
+      <div class="bd"><div class="nm">${esc(i.name)}</div><div class="pr">from ${zl(i.price*.8)}</div></div></button>`).join("");
+}
+function warsaw(){ return new Date(new Date().toLocaleString("en-US",{timeZone:"Europe/Warsaw"})); }
+function renderNote(){
+  const h = warsaw().getHours();
+  $("#delivNote span").innerHTML = h < 14 ? `Order by <b>14:00</b> for delivery today` : `Today’s slots are full. <b>Tomorrow from 9:00</b>`;
+}
+
+/* ---------- product sheet ---------- */
+function openSheet(id){
+  const i = ITEMS.find(x => x.id === id); st.sheet = i; st.size = "M"; st.card = "";
+  $("#sheetBody").innerHTML = `<div class="big"><img src="img/${i.img}.jpg" alt="${esc(i.name)}"></div>
+    <h3 id="sTitle">${esc(i.name)}</h3><p class="desc">${esc(i.desc)}</p>
+    <div class="lab" id="szL">Size</div>
+    <div class="sizes" role="radiogroup" aria-labelledby="szL">${SIZES.map(([s,m,stems]) =>
+      `<button class="size" role="radio" data-size="${s}" aria-checked="${s===st.size}"><b>${s} · ${zl(i.price*m)}</b><small>${stems}</small></button>`).join("")}</div>
+    <label class="lab" for="cardTxt" style="display:block">Card message, free</label>
+    <textarea class="card" id="cardTxt" maxlength="150" placeholder="Happy birthday, Ola! See you on Saturday."></textarea>
+    <div class="count" id="cnt">0 / 150</div>`;
+  $("#scrim").classList.add("on"); $("#sheet").classList.add("on");
+  sheetBtn(); setBack(true); haptic("impactOccurred", "light");
+}
+const sizeMul = s => SIZES.find(x => x[0] === s)[1];
+function sheetBtn(){ MB.set(`Add to cart · ${zl(st.sheet.price * sizeMul(st.size))}`); }
+function closeSheet(){
+  $("#scrim").classList.remove("on"); $("#sheet").classList.remove("on"); $("#sheet").style.transform = "";
+  st.sheet = null; setBack(st.view !== "shop"); syncMain();
+}
+function addToCart(){
+  const i = st.sheet, ex = st.cart.find(l => l.id === i.id && l.size === st.size && l.card === st.card);
+  ex ? ex.q++ : st.cart.push({id:i.id, size:st.size, card:st.card.trim(), q:1});
+  haptic("notificationOccurred", "success"); toast(`${i.name} added`);
+  closeSheet(); renderGrid();
+}
+// drag the sheet down to dismiss
+(() => {
+  let y0 = null, dy = 0; const sh = $("#sheet"), g = $("#grab");
+  g.addEventListener("pointerdown", e => { y0 = e.clientY; sh.style.transition = "none"; g.setPointerCapture(e.pointerId); });
+  g.addEventListener("pointermove", e => { if (y0 === null) return; dy = Math.max(0, e.clientY - y0); sh.style.transform = `translateY(${dy}px)`; });
+  g.addEventListener("pointerup", () => { sh.style.transition = ""; if (dy > 90) closeSheet(); else sh.style.transform = ""; y0 = null; dy = 0; });
+})();
+
+/* ---------- cart & checkout ---------- */
+const lineP = l => ITEMS.find(i => i.id === l.id).price * sizeMul(l.size);
+const sub = () => st.cart.reduce((a,l) => a + lineP(l) * l.q, 0);
+const fee = () => sub() >= FREE_FROM ? 0 : DELIVERY;
+const count = () => st.cart.reduce((a,l) => a + l.q, 0);
+function days(){
+  const now = warsaw(), out = [];
+  for (let k = 0; k < 7; k++) { const d = new Date(now); d.setDate(now.getDate() + k); out.push(d); }
+  return out;
+}
+function slotOpen(d, i){
+  const now = warsaw(), today = d.toDateString() === now.toDateString();
+  if (today && now.getHours() >= 14) return false;
+  if (today && i <= Math.floor((now.getHours() - 6) / 3)) return false;      // slots that already started
+  if (d.getDay() === 0 && i === 3) return false;                             // Sunday evening off
+  return !(d.getDate() % 5 === 0 && i === 1);                                 // a "sold out" window, for realism
+}
+function errs(){
+  const e = {}, f = st.f;
+  if (!f.to.trim()) e.to = "Who gets the flowers?";
+  if (!/^(\+?48)?\s?\d{3}\s?\d{3}\s?\d{3}$/.test(f.phone.trim())) e.phone = "9-digit Polish number";
+  if (f.addr.trim().length < 6) e.addr = "Street, number and flat";
+  if (!st.day) e.day = 1;
+  if (st.slot === null) e.slot = 1;
+  return e;
+}
+function renderCart(){
+  const v = $("#vCart");
+  if (!st.cart.length) { v.innerHTML = `<div class="empty"><b>Your cart is empty</b>Pick a bouquet and it will appear here.</div>`; MB.set("Back to bouquets"); return; }
+  const e = st.tried ? errs() : {}, ds = days();
+  if (!st.day) { const first = ds.find(d => SLOTS.some((_, i) => slotOpen(d, i))); st.day = first.toDateString(); }
+  const day = ds.find(d => d.toDateString() === st.day);
+  if (st.slot !== null && !slotOpen(day, st.slot)) st.slot = null;
+  const fld = (k, label, type, ac) => `<label class="fld${e[k] ? " bad" : ""}"><span>${label}</span><input name="${k}" type="${type}" value="${esc(st.f[k])}" autocomplete="${ac}"${type==="tel"?' inputmode="tel"':""}><em>${e[k] || ""}</em></label>`;
+  v.innerHTML = `
+    <div class="sect"><h4>Bouquets</h4>${st.cart.map((l, n) => { const i = ITEMS.find(x => x.id === l.id); return `
+      <div class="cl"><img src="img/${i.img}.jpg" alt=""><div><div class="nm">${esc(i.name)}</div><small>Size ${l.size} · ${zl(lineP(l))}</small>${l.card ? `<small>Card: “${esc(l.card)}”</small>` : ""}</div>
+      <div class="qty"><button data-dq="${n}" aria-label="One less">−</button><span>${l.q}</span><button data-iq="${n}" aria-label="One more">+</button></div></div>`; }).join("")}</div>
+    <div class="sect"><h4 style="${e.day||e.slot ? "color:#e5484d" : ""}">Delivery day and time</h4>
+      <div class="days" role="radiogroup" aria-label="Day">${ds.map(d => { const any = SLOTS.some((_, i) => slotOpen(d, i));
+        return `<button class="day" role="radio" data-day="${d.toDateString()}" aria-checked="${d.toDateString()===st.day}"${any ? "" : " disabled"}><small>${d.toLocaleDateString("en-GB",{weekday:"short"})}</small><b>${d.getDate()}</b></button>`; }).join("")}</div>
+      <div class="slots" role="radiogroup" aria-label="Time">${SLOTS.map((s, i) => `<button class="slot" role="radio" data-slot="${i}" aria-checked="${st.slot===i}"${slotOpen(day, i) ? "" : " disabled"}>${s}</button>`).join("")}</div></div>
+    <div class="sect"><h4>Recipient</h4>${fld("to","Name","text","off")}${fld("phone","Phone","tel","off")}${fld("addr","Address in Warsaw","text","street-address")}</div>
+    <div class="sect">
+      <div class="tog"><div>Surprise delivery<small>The courier will not call ahead</small></div><button class="sw" role="switch" data-sw="surprise" aria-checked="${st.surprise}" aria-label="Surprise delivery"></button></div>
+      <div class="tog"><div>Send anonymously<small>Your name stays off the card</small></div><button class="sw" role="switch" data-sw="anon" aria-checked="${st.anon}" aria-label="Send anonymously"></button></div>
+    </div>
+    <div class="sect"><div class="tot"><span>Bouquets</span><span>${zl(sub())}</span></div>
+      <div class="tot"><span>Delivery</span><span>${fee() ? zl(fee()) : "free"}</span></div>
+      <div class="tot b"><span>Total</span><span>${zl(sub()+fee())}</span></div></div>
+    <p style="font-size:12.5px;color:var(--hint);padding:12px 18px">Free delivery from ${FREE_FROM} zł. Payment goes through Telegram, so card details never reach the shop.</p>`;
+  MB.set(`Pay ${zl(sub()+fee())}`);
+}
+function go(view){
+  const from = st.view; st.view = view;
+  const ids = {shop:"#vShop", cart:"#vCart", done:"#vDone"}, order = ["shop","cart","done"];
+  Object.entries(ids).forEach(([k, s]) => {
+    const el = $(s), i = order.indexOf(k), j = order.indexOf(view);
+    el.classList.toggle("off-r", i > j); el.classList.toggle("off-l", i < j);
+  });
+  $(ids[view]).scrollTop = 0;
+  setBack(view === "cart"); syncMain();
+}
+function syncMain(){
+  if (st.sheet) return sheetBtn();
+  const n = count();
+  if (st.view === "shop") { inTG && n ? MB.set(`View cart · ${n} · ${zl(sub())}`) : MB.set("", false);
+    $("#cartFab").classList.toggle("on", !inTG && n > 0); $("#fabTxt").textContent = `Cart · ${n} · ${zl(sub())}`; }
+  else { $("#cartFab").classList.remove("on"); if (st.view === "cart") renderCart(); else MB.set("Back to the shop"); }
+}
+function pay(){
+  st.tried = true; const e = errs();
+  if (Object.keys(e).length) { renderCart(); haptic("notificationOccurred", "error");
+    toast(e.day || e.slot ? "Choose a delivery time" : "Check the recipient details"); return; }
+  MB.set("", true, true);
+  // in production: backend creates an invoice link (Bot API createInvoiceLink) and we call tg.openInvoice(link)
+  setTimeout(() => { haptic("notificationOccurred", "success"); done(); }, 1300);
+}
+function done(){
+  const n = 2400 + Math.floor(Math.random() * 600), day = new Date(st.day), total = sub() + fee();
+  $("#vDone").innerHTML = `<div class="done"><div class="tick"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></div>
+    <h3>Order #${n} is paid</h3><p>The florist got your order in the shop chat. You will get a photo of the bouquet before it leaves.</p>
+    <div class="receipt"><div><span>Delivery</span><b>${day.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})}, ${SLOTS[st.slot]}</b></div>
+    <div><span>To</span><b>${esc(st.f.to)}</b></div><div><span>Bouquets</span><b>${count()}</b></div><div><span>Paid</span><b>${zl(total)}</b></div></div>
+    <p style="font-size:12.5px;margin-top:14px">Demo: no payment was taken.</p></div>`;
+  st.cart = []; st.tried = false; renderGrid(); go("done");
+}
+function mainAction(){
+  if (st.sheet) return addToCart();
+  if (st.view === "shop") return go("cart");
+  if (st.view === "cart") return st.cart.length ? pay() : go("shop");
+  go("shop");
+}
+function back(){ if (st.sheet) return closeSheet(); if (st.view !== "shop") go("shop"); }
+function toast(m){ const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("on"), 1700); }
+
+/* ---------- events ---------- */
+document.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const d = b.dataset;
+  if (d.chip) { st.chip = d.chip; renderChips(); renderGrid(); haptic("selectionChanged"); }
+  else if (d.open) openSheet(d.open);
+  else if (d.size) { st.size = d.size; document.querySelectorAll(".size").forEach(x => x.setAttribute("aria-checked", x.dataset.size === st.size)); sheetBtn(); haptic("selectionChanged"); }
+  else if (d.day) { st.day = d.day; renderCart(); haptic("selectionChanged"); }
+  else if (d.slot) { st.slot = +d.slot; renderCart(); haptic("selectionChanged"); }
+  else if (d.sw) { st[d.sw] = !st[d.sw]; b.setAttribute("aria-checked", st[d.sw]); haptic("impactOccurred", "light"); }
+  else if (d.iq) { st.cart[+d.iq].q++; renderCart(); }
+  else if (d.dq) { const l = st.cart[+d.dq]; if (--l.q <= 0) st.cart.splice(+d.dq, 1); renderCart(); renderGrid(); }
+  else if (d.theme) { document.documentElement.classList.toggle("dark", d.theme === "dark"); document.querySelectorAll("[data-theme]").forEach(x => x.setAttribute("aria-pressed", x === b)); }
+  else if (b.id === "fakeBtn") mainAction();
+  else if (b.id === "cartFab") go("cart");
+});
+$("#tgBack").addEventListener("click", back);
+$("#scrim").addEventListener("click", closeSheet);
+document.addEventListener("keydown", e => { if (e.key === "Escape") back(); });
+document.addEventListener("input", e => {
+  if (e.target.id === "cardTxt") { st.card = e.target.value; $("#cnt").textContent = `${st.card.length} / 150`; }
+  else if (e.target.name && e.target.name in st.f) { st.f[e.target.name] = e.target.value;
+    if (st.tried) { const l = e.target.closest(".fld"), er = errs()[e.target.name]; l.classList.toggle("bad", !!er); l.querySelector("em").textContent = er || ""; } }
+});
+
+renderChips(); renderGrid(); renderNote(); go("shop");
+</script>
+</body>
+</html>
